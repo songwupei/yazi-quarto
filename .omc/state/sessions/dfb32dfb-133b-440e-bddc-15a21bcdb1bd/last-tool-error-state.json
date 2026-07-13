@@ -1,7 +1,0 @@
-{
-  "tool_name": "WebFetch",
-  "tool_input_preview": "{\"url\":\"https://raw.githubusercontent.com/yazi-rs/yazi-rs.github.io/main/docs/resources.md\",\"prompt\":\"Show the exact markdown format for listing plugins on this resources page. Show the full page cont...",
-  "error": "Unable to verify if domain raw.githubusercontent.com is safe to fetch. This may be due to network restrictions or enterprise security policies blocking claude.ai.",
-  "timestamp": "2026-07-13T10:01:37.789Z",
-  "retry_count": 2
-}
