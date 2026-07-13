@@ -10,6 +10,7 @@ Yazi 插件：在文件管理器中选中 `.md` 或 `.qmd` 文件，一键渲染
     ▼                                  │
  forge (QuartoForge)                   │
  ├─ 标题提取                           │
+ ├─ YAML frontmatter 生成              │
  ├─ gbt9704 扩展 + Lua 过滤器          │
  └─ content.qmd                        │
     │                                  │
@@ -34,7 +35,11 @@ git clone ssh://git@codeberg.org/songwupei/yazi-quarto.git ~/NutstoreFiles/proje
 ### 2. 安装 Yazi 插件
 
 ```bash
-ln -s ~/NutstoreFiles/projects/yazi-quarto/quarto-render.yazi ~/.config/yazi/plugins/quarto-render.yazi
+# 方式 A：直接运行安装脚本
+bash ~/NutstoreFiles/projects/yazi-quarto/install.sh
+
+# 方式 B：手动创建符号链接
+ln -s ~/NutstoreFiles/projects/yazi-quarto/quarto-render.yazi ~/.config/yazi/plugins/
 ```
 
 ### 3. 添加快捷键
@@ -51,7 +56,7 @@ desc = "Forge render .md/.qmd → gbt9704-pdf + gbt9704-docx"
 ### 4. 配置（可选）
 
 ```bash
-# 指定脚本路径
+# 指定渲染脚本路径
 export FORGE_RENDER_SCRIPT=/path/to/forge-render.sh
 
 # 指定 PrettyDoc 项目路径
@@ -62,10 +67,33 @@ export PRETTYDOC_DIR=/path/to/PrettyDoc
 
 在 Yazi 中，将光标放在 `.md` 或 `.qmd` 文件上，按 **`R`**（大写 R，即 `Shift+r`）。
 
-- `.md` 文件 → 通过 forge 管线生成 `.qmd` 再渲染
-- `.qmd` 文件 → 直接 quarto render
+| 文件类型 | 渲染路径 |
+|----------|----------|
+| `.md` | forge 管线 → `content.qmd` → quarto render |
+| `.qmd` | 直接 quarto render |
 
 生成的 `.pdf` 和 `.docx` 输出在源文件同目录。
+
+### 命令行直接调用
+
+```bash
+~/NutstoreFiles/projects/yazi-quarto/forge-render.sh /path/to/document.md
+~/NutstoreFiles/projects/yazi-quarto/forge-render.sh /path/to/document.qmd
+```
+
+## 项目结构
+
+```
+yazi-quarto/
+├── forge-render.sh           # 核心渲染脚本（.md → forge, .qmd → quarto）
+├── install.sh                # 一键安装符号链接
+├── quarto-render.yazi/       # Yazi 插件目录
+│   └── main.lua              # 插件入口（快捷键触发 → 调用 forge-render.sh）
+├── skills/                   # Claude Code 技能定义
+│   └── forge-render-md/
+│       └── SKILL.md
+└── src/                      # 预留源码目录
+```
 
 ## 依赖
 
