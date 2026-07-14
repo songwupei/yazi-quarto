@@ -19,6 +19,11 @@ set -euo pipefail
 PRETTYDOC_DIR="${PRETTYDOC_DIR:-/home/song/NutstoreFiles/projects/PrettyDoc}"
 ZFLOW_DIR="${PRETTYDOC_DIR}/reports/zflow"
 
+# --- 确保工作目录存在 ---
+mkdir -p "$ZFLOW_DIR"
+mkdir -p "${PRETTYDOC_DIR}/_output/zflow"
+mkdir -p "${PRETTYDOC_DIR}/_output/reports/zflow"
+
 # --- 参数检查 ---
 if [ $# -lt 1 ]; then
     echo "❌ 用法: $0 <file_path>" >&2

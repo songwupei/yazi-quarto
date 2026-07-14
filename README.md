@@ -74,6 +74,11 @@ export PRETTYDOC_DIR=/path/to/PrettyDoc
 
 生成的 `.pdf` 和 `.docx` 输出在源文件同目录。
 
+> 脚本会自动创建以下工作目录（无需手动创建）：
+> - `reports/zflow/` — 临时 .md/.qmd 文件
+> - `_output/zflow/` — forge 管线输出
+> - `_output/reports/zflow/` — quarto 管线输出
+
 ### 命令行直接调用
 
 ```bash
@@ -85,7 +90,7 @@ export PRETTYDOC_DIR=/path/to/PrettyDoc
 
 ```
 yazi-quarto/
-├── forge-render.sh           # 核心渲染脚本（.md → forge, .qmd → quarto）
+├── forge-render.sh           # 核心渲染脚本（自动创建工作目录，.md → forge, .qmd → quarto）
 ├── install.sh                # 一键安装符号链接
 ├── quarto-render.yazi/       # Yazi 插件目录
 │   └── main.lua              # 插件入口（快捷键触发 → 调用 forge-render.sh）
