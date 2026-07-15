@@ -16,7 +16,8 @@
 set -euo pipefail
 
 # ─── 可配置路径 ───
-PRETTYDOC_DIR="${PRETTYDOC_DIR:-/home/song/NutstoreFiles/projects/PrettyDoc}"
+# install.sh 执行时会自动将下方的占位符替换为实际路径
+PRETTYDOC_DIR="${PRETTYDOC_DIR:-__PRETTYDOC_DIR__}"
 ZFLOW_DIR="${PRETTYDOC_DIR}/reports/zflow"
 
 # --- 确保工作目录存在 ---

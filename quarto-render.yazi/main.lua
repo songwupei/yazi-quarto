@@ -1,4 +1,4 @@
---- forge-render.yazi (quarto-render.yazi)
+--- quarto-render.yazi v0.1.0
 --- Yazi 插件：快捷键触发 .md/.qmd → gbt9704-pdf + gbt9704-docx 双格式渲染
 ---
 --- .md 文件走 forge (QuartoForge) 管线：content.md → content.qmd → render
@@ -10,8 +10,10 @@
 local M = {}
 
 -- 脚本路径: 优先环境变量，否则默认路径
+-- 脚本路径：优先环境变量，否则回退到项目内的 forge-render.sh
+-- install.sh 执行时会自动将下方的占位符替换为实际项目路径
 local SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
-    or "/home/song/NutstoreFiles/projects/yazi-quarto/forge-render.sh"
+    or "__YAZI_QUARTO_DIR__/forge-render.sh"
 
 local function run_render(file_path)
     local output, err_code = Command("bash")
