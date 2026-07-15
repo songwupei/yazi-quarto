@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.2.3-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.2.5-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX) with a single keypress.
@@ -13,9 +13,17 @@ Yazi 插件：一键将 `.md` / `.qmd` 文件渲染为 **GB/T 9704** 格式的 P
 
 ```sh
 ya pkg add songwupei/yazi-quarto:quarto-render
+
+# 添加快捷键（在 ~/.config/yazi/keymap.toml 中 [mgr] 段任意位置插入）
+cat >> ~/.config/yazi/keymap.toml << 'EOF'
+[[mgr.prepend_keymap]]
+on = ["R"]
+run = "plugin quarto-render"
+desc = "Render .md/.qmd → GB/T 9704 PDF + DOCX"
+EOF
 ```
 
-Then add a keymap (see below). 然后添加快捷键。
+Then restart Yazi or reload config.
 
 ### B: Manual · 手动
 
