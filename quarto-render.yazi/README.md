@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.2.5-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.2.6-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX) with a single keypress.
@@ -51,13 +51,12 @@ Hover on a `.md` or `.qmd` file in Yazi and press `R` (`Shift+r`).
 
 | File type · 文件类型 | Pipeline · 管线 |
 |---|---|
-| `.md` | copy → save as `.qmd` → quarto render (PDF + DOCX) |
+| `.md` | copy → quarto render (PDF + DOCX) |
 | `.qmd` | copy → quarto render (PDF + DOCX) |
 
 Output `.pdf` and `.docx` are placed next to the source file.
-Intermediate `.qmd` is preserved in `~/.yazi-quarto/`.
 
-输出 `.pdf` / `.docx` 生成在源文件同目录。中间 `.qmd` 文件保留在 `~/.yazi-quarto/`。
+输出 `.pdf` / `.docx` 生成在源文件同目录。
 
 ## Dependencies · 依赖
 
