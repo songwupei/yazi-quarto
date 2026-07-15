@@ -1,12 +1,21 @@
-# yazi-quarto · 一键 GB/T 9704 排版
+# yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
 [![Version](https://img.shields.io/badge/version-0.2.2-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A Yazi plugin that renders `.md` / `.qmd` files into **GB/T 9704** format PDF + DOCX with a single keystroke.
+Hover on `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-formatted PDF + DOCX. Zero config.
 
-Yazi 插件：在文件管理器中选中 `.md` 或 `.qmd` 文件，一键渲染为 **GB/T 9704** 格式的 PDF + DOCX。
+在 Yazi 中选中 `.md` / `.qmd`，按 `R` — GB/T 9704 格式 PDF + DOCX 直接生成。零配置。
+
+## Highlights · 亮点
+
+| | |
+|---|---|
+| 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
+| 🧩 **全套自研** | [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展 + 本插件，全部自研 |
+| ⚡ **一键双格式** | 按 `R` 同时输出 PDF + DOCX |
+| 🧹 **干净无残留** | 渲染后仅保留 `_extensions/`，其余自动清除 |
 
 ## Pipeline · 管线
 
