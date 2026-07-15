@@ -1,134 +1,143 @@
-# yazi-quarto
+# yazi-quarto · 一键 GB/T 9704 排版
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+A Yazi plugin that renders `.md` / `.qmd` files into **GB/T 9704** format PDF + DOCX with a single keystroke.
+
 Yazi 插件：在文件管理器中选中 `.md` 或 `.qmd` 文件，一键渲染为 **GB/T 9704** 格式的 PDF + DOCX。
 
-## 管线
+## Pipeline · 管线
 
 ```
-.md 文件                           .qmd 文件
-    │                                  │
-    ▼                                  │
- forge (QuartoForge)                   │
- ├─ 标题提取                           │
- ├─ YAML frontmatter 生成              │
- ├─ gbt9704 扩展 + Lua 过滤器          │
- └─ content.qmd                        │
-    │                                  │
-    └────────────┬─────────────────────┘
+.md file                            .qmd file
+    │                                   │
+    ▼                                   │
+ forge (QuartoForge)                    │
+ ├─ title extraction · 标题提取         │
+ ├─ YAML frontmatter · 元数据生成       │
+ ├─ gbt9704 extension + Lua filter      │
+ └─ content.qmd                         │
+    │                                   │
+    └────────────┬──────────────────────┘
                  ▼
          quarto render
          ├─ --to gbt9704-pdf  (xelatex)
          └─ --to gbt9704-docx
                  │
                  ▼
-         输出: .pdf + .docx → 原始目录
+      output: .pdf + .docx → source dir · 输出至源文件目录
 ```
 
-## 安装
+## Install · 安装
 
-### 方式 A：ya pkg（推荐）
+### A: ya pkg (recommended · 推荐)
 
 ```sh
 ya pkg add songwupei/yazi-quarto:quarto-render
 ```
 
-### 方式 B：手动安装
+### B: Manual · 手动
 
 ```bash
 git clone https://codeberg.org/songwupei/yazi-quarto.git /tmp/yazi-quarto
 bash /tmp/yazi-quarto/install.sh
 ```
 
-`install.sh` 自动完成：
-- 创建 Yazi 插件符号链接
-- 补丁脚本路径以适配当前电脑
-- 查找并配置 PrettyDoc 路径
-- 可选：添加键盘快捷键
+`install.sh` auto-handles:
+- Symlink the Yazi plugin · 创建插件符号链接
+- Patch script paths to match the current machine · 补丁脚本路径适配当前电脑
+- Auto-detect and configure PrettyDoc path · 自动查找配置 PrettyDoc
+- Optionally add keybinding · 可选添加快捷键
 
 ```bash
-bash install.sh --yes                  # 全自动
-bash install.sh --prettydoc /path/     # 手动指定 PrettyDoc
-bash install.sh --no-keymap            # 跳过快捷键
+bash install.sh --yes                  # Fully auto · 全自动
+bash install.sh --prettydoc /path/     # Set PrettyDoc · 手动指定
+bash install.sh --no-keymap            # Skip keymap · 跳过快捷键
 ```
 
-## 使用
+## Usage · 使用
 
-在 Yazi 中，将光标放在 `.md` 或 `.qmd` 文件上，按 **`R`**（`Shift+r`）。
+Hover on a `.md` or `.qmd` file in Yazi, press **`R`** (`Shift+r`).
 
-| 文件类型 | 渲染路径 |
-|----------|----------|
-| `.md` | forge 管线 → `content.qmd` → quarto render |
-| `.qmd` | 直接 quarto render |
+在 Yazi 中选中 `.md` 或 `.qmd` 文件，按 **`R`**。
+
+| File type · 文件类型 | Pipeline · 渲染路径 |
+|---|---|
+| `.md` | forge → `content.qmd` → quarto render |
+| `.qmd` | direct quarto render · 直接渲染 |
+
+Output `.pdf` + `.docx` appear in the same directory as the source file.
 
 生成的 `.pdf` 和 `.docx` 输出在源文件同目录。
 
+> Working directories are auto-created; no manual setup needed.
 > 工作目录由脚本自动创建，无需手动操作。
 
-### 命令行直接调用
+### CLI usage · 命令行调用
 
 ```bash
 ./forge-render.sh /path/to/document.md
 ./forge-render.sh /path/to/document.qmd
 ```
 
-## 快捷键
+## Keymap · 快捷键
 
-编辑 `~/.config/yazi/keymap.toml`：
+Edit `~/.config/yazi/keymap.toml`:
 
 ```toml
 [[mgr.prepend_keymap]]
 on = ["R"]
 run = "plugin quarto-render"
-desc = "渲染 .md/.qmd → GB/T 9704 PDF + DOCX"
+desc = "Render .md/.qmd → GB/T 9704 PDF + DOCX"
 ```
 
-| 按键 | 功能 |
-|------|------|
-| `R` | 渲染当前文件 |
-| `w` | 查看 Yazi 任务进度 |
+| Key · 按键 | Action · 功能 |
+|---|---|
+| `R` | Render current file · 渲染当前文件 |
+| `w` | Show Yazi task progress · 查看任务进度 |
 
-## 配置
+## Config · 配置
 
 ```bash
-# 覆盖渲染脚本路径（通常不需要，install.sh 已自动配置）
+# Override render script (usually not needed — install.sh handles it)
+# 覆盖脚本路径（通常不需要，install.sh 已自动配置）
 export FORGE_RENDER_SCRIPT=/path/to/forge-render.sh
 
+# Override PrettyDoc path (usually not needed — install.sh auto-detects)
 # 覆盖 PrettyDoc 路径（通常不需要，install.sh 已自动查找）
 export PRETTYDOC_DIR=/path/to/PrettyDoc
 ```
 
-## 项目结构
+## Project structure · 项目结构
 
 ```
 yazi-quarto/
 ├── LICENSE                    # MIT
-├── README.md                  # 项目说明（本文件）
-├── install.sh                 # 跨电脑一键安装脚本
-├── forge-render.sh            # 核心渲染脚本
-├── quarto-render.yazi/        # Yazi 插件目录
+├── README.md                  # Project readme · 项目说明
+├── install.sh                 # Cross-machine installer · 跨电脑安装脚本
+├── forge-render.sh            # Core render script · 核心渲染脚本
+├── quarto-render.yazi/        # Yazi plugin · 插件目录
 │   ├── LICENSE
 │   ├── README.md
-│   └── main.lua               # 插件入口
-└── skills/                    # Claude Code 技能定义
+│   └── main.lua               # Plugin entry · 插件入口
+└── skills/                    # Claude Code skill definition
     └── forge-render-md/
         └── SKILL.md
 ```
 
-## 依赖
+## Dependencies · 依赖
 
-| 依赖 | 说明 |
-|------|------|
-| [Yazi](https://yazi-rs.github.io/) | 终端文件管理器（≥ 25.5.31） |
-| [PrettyDoc](https://codeberg.org/songwupei/PrettyDoc) | 文档排版项目（含 forge、gbt9704 扩展） |
-| [QuartoForge](https://codeberg.org/songwupei/QuartoForge) | 管线引擎 |
-| quarto + pandoc | 文档渲染 |
-| doctyler | 样式管理 |
-| micromamba | 环境管理（quarto 环境） |
+| Dependency · 依赖 | Note · 说明 |
+|---|---|
+| [Yazi](https://yazi-rs.github.io/) | Terminal file manager · 终端文件管理器（≥ 25.5.31） |
+| [PrettyDoc](https://codeberg.org/songwupei/PrettyDoc) | Typesetting engine with forge + gbt9704 extension · 排版项目 |
+| [QuartoForge](https://codeberg.org/songwupei/QuartoForge) | Pipeline engine · 管线引擎 |
+| quarto + pandoc | Document rendering · 文档渲染 |
+| doctyler | Style management · 样式管理 |
+| micromamba | Environment management · 环境管理（quarto 环境） |
 
-## 许可证
+## License · 许可证
 
-MIT — 详见 [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE)

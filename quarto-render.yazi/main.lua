@@ -1,16 +1,23 @@
 --- quarto-render.yazi v0.1.0
+--- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx
 --- Yazi 插件：快捷键触发 .md/.qmd → gbt9704-pdf + gbt9704-docx 双格式渲染
+---
+--- .md → forge (QuartoForge) pipeline: content.md → content.qmd → render
+--- .qmd → direct quarto render
 ---
 --- .md 文件走 forge (QuartoForge) 管线：content.md → content.qmd → render
 --- .qmd 文件直接 quarto render
 ---
---- 安装: ln -s /path/to/yazi-quarto/quarto-render.yazi ~/.config/yazi/plugins/
---- 快捷键: 在 keymap.toml 中添加 [[mgr.prepend_keymap]] on=["R"] run="plugin quarto-render"
+--- Install / 安装:
+---   ln -s /path/to/yazi-quarto/quarto-render.yazi ~/.config/yazi/plugins/
+--- Keymap / 快捷键:
+---   [[mgr.prepend_keymap]] on=["R"] run="plugin quarto-render"
 
 local M = {}
 
--- 脚本路径: 优先环境变量，否则默认路径
+-- Script path: env var first, fallback to in-project forge-render.sh
 -- 脚本路径：优先环境变量，否则回退到项目内的 forge-render.sh
+-- The placeholder below is auto-replaced by install.sh at install time
 -- install.sh 执行时会自动将下方的占位符替换为实际项目路径
 local SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
     or "__YAZI_QUARTO_DIR__/forge-render.sh"
@@ -43,6 +50,7 @@ local function run_render(file_path)
         return
     end
 
+    -- Show last few lines as success summary
     -- 显示最后几行输出作为成功摘要
     local summary = output.stdout or ""
     local lines = {}
@@ -83,7 +91,7 @@ function M:entry(_)
     if not file_path:match("%.md$") and not file_path:match("%.qmd$") then
         ya.notify({
             title = "Forge Render",
-            content = "仅支持 .md / .qmd:\n" .. file_path,
+            content = "Only .md / .qmd supported · 仅支持 .md / .qmd:\n" .. file_path,
             timeout = 4.0,
             level = "warn",
         })
