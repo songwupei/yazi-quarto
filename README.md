@@ -33,7 +33,7 @@ Yazi 插件：在文件管理器中选中 `.md` 或 `.qmd` 文件，一键渲染
 ### 方式 A：ya pkg（推荐）
 
 ```sh
-ya pkg add codeberg.org/songwupei/yazi-quarto
+ya pkg add songwupei/yazi-quarto:quarto-render
 ```
 
 ### 方式 B：手动安装

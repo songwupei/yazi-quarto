@@ -10,7 +10,7 @@ Yazi 插件：一键将 `.md` / `.qmd` 文件渲染为 **GB/T 9704** 格式的 P
 ### 方式 A：ya pkg（推荐，Yazi ≥ 25.5.31）
 
 ```sh
-ya pkg add codeberg.org/songwupei/yazi-quarto
+ya pkg add codeberg.org/songwupei/yazi-quarto:quarto-render
 ```
 
 然后添加快捷键（见下方）。
