@@ -20,7 +20,7 @@ local M = {}
 local SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
     or (function()
         local cfg = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
-        return cfg .. "/yazi/plugins/quarto-render.yazi/forge-render.sh"
+        return cfg .. "/yazi/plugins/quarto-render.yazi/assets/forge-render.sh"
     end)()
 
 local function run_render(file_path)

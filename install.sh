@@ -120,7 +120,7 @@ _check_cmd() {
 # ════════════════════════════════════════════════════════════
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_SRC="$PROJECT_DIR/quarto-render.yazi"
-FORGE_SCRIPT="$PLUGIN_SRC/forge-render.sh"
+FORGE_SCRIPT="$PLUGIN_SRC/assets/forge-render.sh"
 MAIN_LUA="$PLUGIN_SRC/main.lua"
 
 YAZI_CONFIG="${YAZI_CONFIG_HOME:-$HOME/.config/yazi}"
