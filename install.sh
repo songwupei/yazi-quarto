@@ -3,15 +3,14 @@
 # install.sh — yazi-quarto 一键安装脚本
 #
 # 功能:
-#   1. 自动检测项目根目录（支持任意用户/任意路径）
+#   1. 自动检测项目根目录
 #   2. 创建 Yazi 插件符号链接
-#   3. 可选：配置 PRETTYDOC_DIR 环境变量
+#   3. 检查 quarto 是否已安装
 #   4. 可选：自动添加快捷键到 keymap.toml
 #   5. 安装后自检并给出彩色摘要
 #
 # 用法:
 #   bash install.sh                   # 交互模式
-#   bash install.sh --prettydoc DIR   # 手动指定 PrettyDoc 路径
 #   bash install.sh --no-keymap       # 跳过快捷键配置
 #   bash install.sh --yes             # 全部自动确认（非交互）
 # ============================================================
@@ -32,17 +31,11 @@ TODO=()
 INSTALLED_COMPONENTS=()
 
 # ─── 参数解析 ───
-PRETTYDOC_ARG=""
 SKIP_KEYMAP=false
 AUTO_YES=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --prettydoc)
-            shift
-            PRETTYDOC_ARG="$1"
-            shift
-            ;;
         --no-keymap)
             SKIP_KEYMAP=true
             shift
@@ -55,7 +48,6 @@ while [[ $# -gt 0 ]]; do
             echo "用法: $0 [选项]"
             echo ""
             echo "选项:"
-            echo "  --prettydoc DIR   手动指定 PrettyDoc 项目路径"
             echo "  --no-keymap       跳过快捷键配置"
             echo "  --yes, -y         全部自动确认（非交互模式）"
             echo "  --help, -h        显示帮助"
@@ -178,41 +170,16 @@ else
 fi
 
 # ════════════════════════════════════════════════════════════
-# 步骤 2: PrettyDoc 配置
+# 步骤 2: 检查 quarto
 # ════════════════════════════════════════════════════════════
-_step "PrettyDoc 配置"
+_step "检查 quarto"
 
-if [ -n "$PRETTYDOC_ARG" ]; then
-    PRETTYDOC_DIR="$PRETTYDOC_ARG"
-    _info "使用命令行指定的路径: $PRETTYDOC_DIR"
+if command -v quarto &>/dev/null; then
+    _success "quarto: $(quarto --version 2>/dev/null || echo 'installed')"
 else
-    # 自动搜索常见路径
-    CANDIDATES=()
-    PARENT_DIR="$(dirname "$PROJECT_DIR")"
-    if [ -d "$PARENT_DIR/PrettyDoc" ] && [ -f "$PARENT_DIR/PrettyDoc/forge" ]; then
-        CANDIDATES+=("$PARENT_DIR/PrettyDoc")
-    fi
-    if [ -d "$HOME/NutstoreFiles/projects/PrettyDoc" ] && [ -f "$HOME/NutstoreFiles/projects/PrettyDoc/forge" ]; then
-        CANDIDATES+=("$HOME/NutstoreFiles/projects/PrettyDoc")
-    fi
-    if [ -d "$HOME/projects/PrettyDoc" ] && [ -f "$HOME/projects/PrettyDoc/forge" ]; then
-        CANDIDATES+=("$HOME/projects/PrettyDoc")
-    fi
-    CANDIDATES=($(printf '%s\n' "${CANDIDATES[@]}" | sort -u))
-
-    if [ ${#CANDIDATES[@]} -gt 0 ]; then
-        PRETTYDOC_DIR="${CANDIDATES[0]}"
-        _success "自动找到 PrettyDoc: $PRETTYDOC_DIR"
-    else
-        _warn "未找到 PrettyDoc（QuartoForge 排版引擎）"
-        _info "forge-render.sh 运行时会自动搜索，或设置环境变量:"
-        _info "  export PRETTYDOC_DIR=/path/to/PrettyDoc"
-        TODO+=("安装 PrettyDoc: https://codeberg.org/songwupei/PrettyDoc")
-    fi
-fi
-
-if [ -n "${PRETTYDOC_DIR:-}" ] && [ -f "$PRETTYDOC_DIR/forge" ]; then
-    _success "forge 可执行文件: $PRETTYDOC_DIR/forge ✓"
+    _warn "未安装 quarto（渲染功能将无法使用）"
+    _info "安装方法: https://quarto.org/docs/get-started/"
+    TODO+=("安装 quarto: https://quarto.org/docs/get-started/")
 fi
 
 # ════════════════════════════════════════════════════════════
@@ -223,22 +190,19 @@ _step "快捷键配置"
 KEYMAP_ENTRY='[[mgr.prepend_keymap]]
 on = ["R"]
 run = "plugin quarto-render"
-desc = "Forge render .md/.qmd → gbt9704-pdf + gbt9704-docx"'
+desc = "Render .md/.qmd → gbt9704-pdf + gbt9704-docx"'
 
 if $SKIP_KEYMAP; then
     _info "已跳过快捷键配置 (--no-keymap)"
 elif [ -f "$KEYMAP_FILE" ]; then
     if grep -q "quarto-render" "$KEYMAP_FILE"; then
-        _success "快捷鍵 R 已配置"
+        _success "快捷键 R 已配置"
     else
         if _confirm "添加快捷键 R（在 keymap.toml 的 [mgr] 中）？"; then
-            # 检查是否有 [mgr] section
             if grep -q '^\[mgr\]' "$KEYMAP_FILE"; then
-                # 在 [mgr] section 后插入
                 echo "" >> "$KEYMAP_FILE"
                 echo "$KEYMAP_ENTRY" >> "$KEYMAP_FILE"
             else
-                # 追加到文件末尾
                 echo "" >> "$KEYMAP_FILE"
                 echo "[mgr]" >> "$KEYMAP_FILE"
                 echo "$KEYMAP_ENTRY" >> "$KEYMAP_FILE"
@@ -251,7 +215,7 @@ elif [ -f "$KEYMAP_FILE" ]; then
     fi
 else
     _warn "$KEYMAP_FILE 不存在（yazi 尚未初始化？）"
-    TODO+=("初始化 yazi 后再运行本脚本添加 keymap，或手动编辑 ~/.config/yazi/keymap.toml")
+    TODO+=("初始化 yazi 后再运行本脚本添加 keymap")
 fi
 
 # ════════════════════════════════════════════════════════════
@@ -295,18 +259,12 @@ fi
 echo ""
 echo -e "${BOLD}环境变量（可选）:${NC}"
 echo -e "  export FORGE_RENDER_SCRIPT=${FORGE_SCRIPT}"
-if [ -n "${PRETTYDOC_DIR:-}" ]; then
-    echo -e "  export PRETTYDOC_DIR=${PRETTYDOC_DIR}"
-else
-    echo -e "  export PRETTYDOC_DIR=/path/to/PrettyDoc"
-fi
 
 echo ""
 echo -e "${GREEN}${BOLD}安装完成！${NC}"
 echo "  在 Yazi 中选中 .md 或 .qmd 文件，按 ${BOLD}R${NC} 渲染。"
-echo "  如有问题，运行 ${CYAN}ml4w-diagnosis${NC} 或检查 ~/.config/yazi/"
+echo "  首次运行会自动在 ~/.yazi-quarto/ 安装 quarto-gbt9704 扩展。"
 
-# 返回码
 if [ ${#ERRORS[@]} -gt 0 ]; then
     exit 1
 fi

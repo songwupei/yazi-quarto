@@ -1,167 +1,141 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi 插件配套脚本
-# 自动识别文件类型，走不同渲染管线：
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.2.2)
 #
-#   .md  → forge (QuartoForge) 管线:
-#           content.md → content.qmd (gbt9704 扩展 + Lua 过滤器)
-#           → quarto render → PDF + DOCX
-#   .qmd → 直接 quarto render:
-#           quarto render --to gbt9704-pdf + gbt9704-docx
+# 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
-# 以 PrettyDoc 的 reports/zflow/ 作为临时工作区
+#   .md / .qmd → quarto render → gbt9704-pdf + gbt9704-docx
+#
+# 工作流：
+#   1. 确保 ~/.yazi-quarto/ 存在并已安装 quarto-gbt9704 扩展
+#   2. 复制输入文件到 ~/.yazi-quarto/
+#   3. quarto render --to gbt9704-pdf  +  --to gbt9704-docx
+#   4. 复制输出回原始目录，清理临时文件
 #
 # Usage: forge-render.sh <file_path>
 # ============================================================
 set -euo pipefail
 
-# ─── 自动检测 PrettyDoc 路径 ───
-# 优先级: 环境变量 PRETTYDOC_DIR > 自动搜索常见路径
-_find_prettydoc() {
-    local candidates=(
-        "$HOME/NutstoreFiles/projects/PrettyDoc"
-        "$HOME/projects/PrettyDoc"
-        "$HOME/PrettyDoc"
-    )
-    for d in "${candidates[@]}"; do
-        if [ -f "$d/forge" ]; then
-            echo "$d"
-            return 0
-        fi
-    done
-    return 1
-}
+# ─── 颜色 ───
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
 
-if [ -z "${PRETTYDOC_DIR:-}" ]; then
-    PRETTYDOC_DIR=$(_find_prettydoc)
-    if [ -z "$PRETTYDOC_DIR" ]; then
-        echo "❌ 未找到 PrettyDoc（QuartoForge 排版引擎）" >&2
-        echo "   请设置环境变量: export PRETTYDOC_DIR=/path/to/PrettyDoc" >&2
-        exit 1
-    fi
-fi
-ZFLOW_DIR="${PRETTYDOC_DIR}/reports/zflow"
+# ─── 路径 ───
+WORK_DIR="$HOME/.yazi-quarto"
+EXT_NAME="songwupei/quarto-gbt9704"
 
-# --- 确保工作目录存在 ---
-mkdir -p "$ZFLOW_DIR"
-mkdir -p "${PRETTYDOC_DIR}/_output/zflow"
-mkdir -p "${PRETTYDOC_DIR}/_output/reports/zflow"
-
-# --- 参数检查 ---
+# ─── 参数检查 ───
 if [ $# -lt 1 ]; then
-    echo "❌ 用法: $0 <file_path>" >&2
+    echo -e "${RED}❌ 用法: $0 <file_path>${NC}" >&2
     exit 1
 fi
 
 INPUT_FILE="$1"
 
 if [ ! -f "$INPUT_FILE" ]; then
-    echo "❌ 文件不存在: $INPUT_FILE" >&2
+    echo -e "${RED}❌ 文件不存在: $INPUT_FILE${NC}" >&2
     exit 1
 fi
 
 INPUT_FILENAME=$(basename "$INPUT_FILE")
 INPUT_BASENAME="${INPUT_FILENAME%.*}"
 INPUT_EXT="${INPUT_FILENAME##*.}"
-ORIG_DIR=$(dirname "$INPUT_FILE")
+ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 
 echo "📄 输入文件: $INPUT_FILENAME  (.${INPUT_EXT})"
 echo "📁 原始目录: $ORIG_DIR"
 
-# --- 清理 zflow 残留 ---
-_cleanup() {
-    rm -f "${ZFLOW_DIR}/"*.md "${ZFLOW_DIR}/"*.qmd 2>/dev/null || true
-    rm -f "${ZFLOW_DIR}/"*.cls "${ZFLOW_DIR}/"*.sty "${ZFLOW_DIR}/"*.tex 2>/dev/null || true
-    rm -f "${PRETTYDOC_DIR}/_output/zflow/"*.* 2>/dev/null || true
-    rm -f "${PRETTYDOC_DIR}/_output/reports/zflow/"*.* 2>/dev/null || true
+# ─── 检查 quarto ───
+if ! command -v quarto &>/dev/null; then
+    echo -e "${RED}❌ 未安装 quarto${NC}" >&2
+    echo "   安装方法: https://quarto.org/docs/get-started/" >&2
+    exit 1
+fi
+echo "✅ quarto: $(quarto --version 2>/dev/null || echo 'ok')"
+
+# ─── 初始化工作目录 ───
+_init_workdir() {
+    # 创建目录
+    if ! mkdir -p "$WORK_DIR" 2>/dev/null; then
+        echo -e "${RED}❌ 无法创建 $WORK_DIR（权限不足？）${NC}" >&2
+        exit 1
+    fi
+
+    # 安装/更新 quarto-gbt9704 扩展
+    echo "🔧 检查 quarto-gbt9704 扩展 ..."
+    cd "$WORK_DIR"
+
+    if [ ! -f "_extensions/songwupei/quarto-gbt9704/_extension.yml" ]; then
+        echo "📦 安装 $EXT_NAME ..."
+        if ! quarto add "$EXT_NAME" --no-prompt 2>&1; then
+            echo -e "${RED}❌ 扩展安装失败: $EXT_NAME${NC}" >&2
+            echo "   请检查网络连接，或手动运行:" >&2
+            echo "   cd $WORK_DIR && quarto add $EXT_NAME" >&2
+            exit 1
+        fi
+        echo "✅ 扩展已安装"
+    else
+        echo "✅ 扩展已就绪"
+        # 尝试更新（失败则忽略）
+        quarto add "$EXT_NAME" --no-prompt 2>/dev/null || true
+    fi
 }
 
-_cleanup
+# ─── 清理 ───
+_cleanup() {
+    rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}"_files/* 2>/dev/null || true
+    rmdir "$WORK_DIR/${INPUT_BASENAME}"_files 2>/dev/null || true
+}
 
-# --- 初始化 micromamba ---
-echo "🔧 激活 quarto 环境 ..."
-eval "$(micromamba shell hook --shell bash)"
-micromamba activate quarto
+_init_workdir
 
-cd "$PRETTYDOC_DIR"
+# ─── 复制输入文件到工作目录 ───
+cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
+echo "📋 已复制 → $WORK_DIR/$INPUT_FILENAME"
 
-# ================================================================
-# 路径 A: .md → forge 管线
-# ================================================================
-if [ "$INPUT_EXT" = "md" ]; then
-    echo "📝 检测到 .md 文件 → 使用 forge 管线"
-    echo ""
+cd "$WORK_DIR"
 
-    # 1. 复制到 zflow 作为 content.md（forge 约定）
-    cp "$INPUT_FILE" "${ZFLOW_DIR}/content.md"
-    echo "📋 已复制 → reports/zflow/content.md"
+# ─── quarto render ───
+echo ""
+echo "🖨️  quarto render --to gbt9704-pdf ..."
+if ! quarto render "$INPUT_FILENAME" --to gbt9704-pdf 2>&1; then
+    echo -e "${RED}❌ PDF 渲染失败${NC}" >&2
+    _cleanup
+    exit 1
+fi
+echo "   ✓ PDF 完成"
 
-    # 2. forge: docx
-    echo "🖨️  forge → docx ..."
-    ./forge zflow --format docx
-    if [ -f "${PRETTYDOC_DIR}/_output/zflow/content.docx" ]; then
-        cp "${PRETTYDOC_DIR}/_output/zflow/content.docx" "${ORIG_DIR}/${INPUT_BASENAME}.docx"
-        echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
-    else
-        echo "   ⚠️  docx 未生成"
-    fi
+echo "🖨️  quarto render --to gbt9704-docx ..."
+if ! quarto render "$INPUT_FILENAME" --to gbt9704-docx 2>&1; then
+    echo -e "${RED}❌ DOCX 渲染失败${NC}" >&2
+    _cleanup
+    exit 1
+fi
+echo "   ✓ DOCX 完成"
 
-    # 3. forge: pdf (gbt9704-pdf, xelatex)
-    echo "🖨️  forge → pdf ..."
-    ./forge zflow --format pdf
-    if [ -f "${PRETTYDOC_DIR}/_output/zflow/content-latex.pdf" ]; then
-        cp "${PRETTYDOC_DIR}/_output/zflow/content-latex.pdf" "${ORIG_DIR}/${INPUT_BASENAME}.pdf"
-        echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
-    elif [ -f "${PRETTYDOC_DIR}/_output/zflow/content.pdf" ]; then
-        cp "${PRETTYDOC_DIR}/_output/zflow/content.pdf" "${ORIG_DIR}/${INPUT_BASENAME}.pdf"
-        echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
-    else
-        echo "   ⚠️  pdf 未生成"
-    fi
+# ─── 复制输出回原目录 ───
+COPIED=""
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.pdf" "$ORIG_DIR/"
+    echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
+    COPIED="${COPIED}pdf "
+fi
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.docx" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.docx" "$ORIG_DIR/"
+    echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
+    COPIED="${COPIED}docx "
+fi
 
-# ================================================================
-# 路径 B: .qmd → 直接 quarto render
-# ================================================================
-elif [ "$INPUT_EXT" = "qmd" ]; then
-    echo "📝 检测到 .qmd 文件 → 直接 quarto render"
-    echo ""
-
-    # 1. 复制到 zflow
-    cp "$INPUT_FILE" "${ZFLOW_DIR}/${INPUT_FILENAME}"
-    echo "📋 已复制 → reports/zflow/${INPUT_FILENAME}"
-
-    # 2. quarto render: gbt9704-pdf
-    echo "🖨️  quarto render --to gbt9704-pdf ..."
-    quarto render "reports/zflow/${INPUT_FILENAME}" --to gbt9704-pdf
-    echo "   ✓ PDF 完成"
-
-    # 3. quarto render: gbt9704-docx
-    echo "🖨️  quarto render --to gbt9704-docx ..."
-    quarto render "reports/zflow/${INPUT_FILENAME}" --to gbt9704-docx
-    echo "   ✓ DOCX 完成"
-
-    # 4. 复制输出回原目录
-    OUTPUT_SUBDIR="${PRETTYDOC_DIR}/_output/reports/zflow"
-    COPIED=""
-    if [ -f "${OUTPUT_SUBDIR}/${INPUT_BASENAME}.pdf" ]; then
-        cp "${OUTPUT_SUBDIR}/${INPUT_BASENAME}.pdf" "${ORIG_DIR}/"
-        echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
-        COPIED="${COPIED}pdf "
-    fi
-    if [ -f "${OUTPUT_SUBDIR}/${INPUT_BASENAME}.docx" ]; then
-        cp "${OUTPUT_SUBDIR}/${INPUT_BASENAME}.docx" "${ORIG_DIR}/"
-        echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
-        COPIED="${COPIED}docx "
-    fi
-    if [ -z "$COPIED" ]; then
-        echo "   ⚠️  警告: 没有找到输出文件"
-    fi
-else
-    echo "❌ 不支持的文件类型: .${INPUT_EXT}（仅支持 .md 和 .qmd）" >&2
+if [ -z "$COPIED" ]; then
+    echo -e "${YELLOW}⚠️  警告: 没有找到输出文件${NC}"
+    _cleanup
     exit 1
 fi
 
-# --- 清理 ---
+# ─── 清理 ───
 _cleanup
-echo "🧹 已清理 zflow 临时文件"
+echo "🧹 已清理临时文件"
 echo "✅ 完成!"
