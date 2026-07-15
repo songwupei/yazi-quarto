@@ -83,11 +83,13 @@ _init_workdir() {
     fi
 }
 
-# ─── 清理 ───
+# ─── 清理（保留 _extensions/）───
 _cleanup() {
-    rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
-    rm -f "$WORK_DIR/${INPUT_BASENAME}"_files/* 2>/dev/null || true
-    rmdir "$WORK_DIR/${INPUT_BASENAME}"_files 2>/dev/null || true
+    for item in "$WORK_DIR"/*; do
+        if [ "$(basename "$item")" != "_extensions" ]; then
+            rm -rf "$item" 2>/dev/null || true
+        fi
+    done
 }
 
 _init_workdir
