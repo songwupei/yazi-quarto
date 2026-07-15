@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # ============================================================
-# install.sh — yazi-quarto 跨电脑一键安装脚本
+# install.sh — yazi-quarto 一键安装脚本
 #
 # 功能:
 #   1. 自动检测项目根目录（支持任意用户/任意路径）
 #   2. 创建 Yazi 插件符号链接
-#   3. 自动补丁 main.lua 中的脚本路径
-#   4. 自动查找/配置 PrettyDoc 路径（写入 forge-render.sh）
-#   5. 可选：自动添加快捷键到 keymap.toml
-#   6. 安装后自检并给出彩色摘要
+#   3. 可选：配置 PRETTYDOC_DIR 环境变量
+#   4. 可选：自动添加快捷键到 keymap.toml
+#   5. 安装后自检并给出彩色摘要
 #
 # 用法:
 #   bash install.sh                   # 交互模式
@@ -121,7 +120,7 @@ _check_cmd() {
 # ════════════════════════════════════════════════════════════
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_SRC="$PROJECT_DIR/quarto-render.yazi"
-FORGE_SCRIPT="$PROJECT_DIR/forge-render.sh"
+FORGE_SCRIPT="$PLUGIN_SRC/forge-render.sh"
 MAIN_LUA="$PLUGIN_SRC/main.lua"
 
 YAZI_CONFIG="${YAZI_CONFIG_HOME:-$HOME/.config/yazi}"
@@ -137,7 +136,7 @@ _info "项目目录 : ${GREEN}$PROJECT_DIR${NC}"
 _info "用户配置  : ${GREEN}$YAZI_CONFIG${NC}"
 
 # 校验项目完整性
-for f in "$PLUGIN_SRC/main.lua" "$FORGE_SCRIPT"; do
+for f in "$PLUGIN_SRC/main.lua" "$PLUGIN_SRC/forge-render.sh"; do
     if [ ! -f "$f" ]; then
         _error "项目文件缺失: $f（请确保在完整的 git 仓库中运行）"
         exit 1
@@ -179,110 +178,45 @@ else
 fi
 
 # ════════════════════════════════════════════════════════════
-# 步骤 2: 补丁 main.lua — 写入项目路径
+# 步骤 2: PrettyDoc 配置
 # ════════════════════════════════════════════════════════════
-_step "配置 main.lua 脚本路径"
-
-if grep -q "__YAZI_QUARTO_DIR__" "$MAIN_LUA"; then
-    # 需要补丁
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s|__YAZI_QUARTO_DIR__|$PROJECT_DIR|g" "$MAIN_LUA"
-    else
-        sed -i "s|__YAZI_QUARTO_DIR__|$PROJECT_DIR|g" "$MAIN_LUA"
-    fi
-    _success "已写入项目路径: $PROJECT_DIR"
-elif grep -q "$PROJECT_DIR" "$MAIN_LUA"; then
-    _success "main.lua 路径已正确（无需修改）"
-else
-    _warn "main.lua 中未找到占位符，且路径与当前项目不匹配"
-    _info "脚本回退路径将使用当前值（可能不正确），可通过环境变量覆盖："
-    _info "  export FORGE_RENDER_SCRIPT=$FORGE_SCRIPT"
-fi
-
-# ════════════════════════════════════════════════════════════
-# 步骤 3: 查找 & 配置 PrettyDoc
-# ════════════════════════════════════════════════════════════
-_step "配置 PrettyDoc 路径"
+_step "PrettyDoc 配置"
 
 if [ -n "$PRETTYDOC_ARG" ]; then
-    # 用户通过命令行指定
     PRETTYDOC_DIR="$PRETTYDOC_ARG"
     _info "使用命令行指定的路径: $PRETTYDOC_DIR"
 else
     # 自动搜索常见路径
     CANDIDATES=()
-
-    # 候选 1: 同父目录下
     PARENT_DIR="$(dirname "$PROJECT_DIR")"
     if [ -d "$PARENT_DIR/PrettyDoc" ] && [ -f "$PARENT_DIR/PrettyDoc/forge" ]; then
         CANDIDATES+=("$PARENT_DIR/PrettyDoc")
     fi
-
-    # 候选 2: ~/NutstoreFiles/projects/PrettyDoc (Nutstore 同步场景)
     if [ -d "$HOME/NutstoreFiles/projects/PrettyDoc" ] && [ -f "$HOME/NutstoreFiles/projects/PrettyDoc/forge" ]; then
         CANDIDATES+=("$HOME/NutstoreFiles/projects/PrettyDoc")
     fi
-
-    # 候选 3: ~/projects/PrettyDoc
     if [ -d "$HOME/projects/PrettyDoc" ] && [ -f "$HOME/projects/PrettyDoc/forge" ]; then
         CANDIDATES+=("$HOME/projects/PrettyDoc")
     fi
-
-    # 候选 4: 从环境变量读取
-    if [ -n "${PRETTYDOC_DIR:-}" ] && [ -f "${PRETTYDOC_DIR}/forge" ]; then
-        CANDIDATES+=("${PRETTYDOC_DIR}")
-    fi
-
-    # 去重
     CANDIDATES=($(printf '%s\n' "${CANDIDATES[@]}" | sort -u))
 
     if [ ${#CANDIDATES[@]} -gt 0 ]; then
         PRETTYDOC_DIR="${CANDIDATES[0]}"
-        if [ ${#CANDIDATES[@]} -gt 1 ]; then
-            _info "找到多个 PrettyDoc 候选，使用第一个: $PRETTYDOC_DIR"
-            for c in "${CANDIDATES[@]}"; do
-                _info "  · $c"
-            done
-        else
-            _info "自动找到 PrettyDoc: $PRETTYDOC_DIR"
-        fi
+        _success "自动找到 PrettyDoc: $PRETTYDOC_DIR"
     else
         _warn "未找到 PrettyDoc（QuartoForge 排版引擎）"
-        _info "你可以稍后设置: export PRETTYDOC_DIR=/path/to/PrettyDoc"
-        _info "或重新运行: $0 --prettydoc /path/to/PrettyDoc"
+        _info "forge-render.sh 运行时会自动搜索，或设置环境变量:"
+        _info "  export PRETTYDOC_DIR=/path/to/PrettyDoc"
         TODO+=("安装 PrettyDoc: https://codeberg.org/songwupei/PrettyDoc")
     fi
 fi
 
-# 补丁 forge-render.sh
-if [ -n "${PRETTYDOC_DIR:-}" ]; then
-    if [ -f "$PRETTYDOC_DIR/forge" ]; then
-        if grep -q "__PRETTYDOC_DIR__" "$FORGE_SCRIPT"; then
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "s|__PRETTYDOC_DIR__|$PRETTYDOC_DIR|g" "$FORGE_SCRIPT"
-            else
-                sed -i "s|__PRETTYDOC_DIR__|$PRETTYDOC_DIR|g" "$FORGE_SCRIPT"
-            fi
-            _success "已写入 PrettyDoc 路径: $PRETTYDOC_DIR"
-        else
-            _success "PrettyDoc 路径已配置"
-        fi
-    else
-        _warn "PrettyDoc 路径存在但缺少 forge 可执行文件: $PRETTYDOC_DIR"
-        _info "请确认已克隆完整仓库并有执行权限"
-    fi
-else
-    # 未配置 PrettyDoc — 保持占位符，但给出明确警告
-    if grep -q "__PRETTYDOC_DIR__" "$FORGE_SCRIPT"; then
-        _warn "PrettyDoc 未配置，.md 渲染功能将无法使用（.qmd 不受影响）"
-        _info "可通过以下方式配置:"
-        _info "  1. 环境变量: export PRETTYDOC_DIR=/path/to/PrettyDoc"
-        _info "  2. 重新运行: $0 --prettydoc /path/to/PrettyDoc"
-    fi
+if [ -n "${PRETTYDOC_DIR:-}" ] && [ -f "$PRETTYDOC_DIR/forge" ]; then
+    _success "forge 可执行文件: $PRETTYDOC_DIR/forge ✓"
 fi
 
 # ════════════════════════════════════════════════════════════
-# 步骤 4: 快捷键配置
+# 步骤 3: 快捷键配置
 # ════════════════════════════════════════════════════════════
 _step "快捷键配置"
 

@@ -15,12 +15,13 @@
 
 local M = {}
 
--- Script path: env var first, fallback to in-project forge-render.sh
--- 脚本路径：优先环境变量，否则回退到项目内的 forge-render.sh
--- The placeholder below is auto-replaced by install.sh at install time
--- install.sh 执行时会自动将下方的占位符替换为实际项目路径
+-- Script path: env var first, fallback to the script bundled in this plugin
+-- 脚本路径：优先环境变量，否则回退到插件自带的 forge-render.sh
 local SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
-    or "__YAZI_QUARTO_DIR__/forge-render.sh"
+    or (function()
+        local cfg = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+        return cfg .. "/yazi/plugins/quarto-render.yazi/forge-render.sh"
+    end)()
 
 local function run_render(file_path)
     local output, err_code = Command("bash")
