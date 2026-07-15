@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.2.2
+--- quarto-render.yazi v0.2.3
 --- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx
 --- 快捷键触发 .md / .qmd → quarto + gbt9704 → PDF + DOCX
 ---

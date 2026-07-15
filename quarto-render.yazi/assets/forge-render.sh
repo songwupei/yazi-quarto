@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.2.2)
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.2.3)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -83,20 +83,30 @@ _init_workdir() {
     fi
 }
 
-# ─── 清理（保留 _extensions/）───
+# ─── 清理 ───
 _cleanup() {
-    for item in "$WORK_DIR"/*; do
-        if [ "$(basename "$item")" != "_extensions" ]; then
-            rm -rf "$item" 2>/dev/null || true
-        fi
-    done
+    # 删除输入文件副本（保留 .qmd）
+    if [ "$INPUT_EXT" != "qmd" ]; then
+        rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
+    fi
+    rm -f "$WORK_DIR/${INPUT_BASENAME}"_files/* 2>/dev/null || true
+    rmdir "$WORK_DIR/${INPUT_BASENAME}"_files 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.pdf" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.docx" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
+    rm -f "$WORK_DIR/gbt9704.cls" 2>/dev/null || true
+    rm -f "$WORK_DIR/zhlineskip.sty" 2>/dev/null || true
 }
 
 _init_workdir
 
-# ─── 复制输入文件到工作目录 ───
+# ─── 复制输入文件到工作目录（.md + YAML → 同时保存为 .qmd）───
 cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
 echo "📋 已复制 → $WORK_DIR/$INPUT_FILENAME"
+if [ "$INPUT_EXT" = "md" ]; then
+    cp "$INPUT_FILE" "$WORK_DIR/${INPUT_BASENAME}.qmd"
+    echo "📋 已保存 → $WORK_DIR/${INPUT_BASENAME}.qmd"
+fi
 
 cd "$WORK_DIR"
 

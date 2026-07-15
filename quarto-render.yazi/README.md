@@ -1,66 +1,32 @@
-# yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
+# quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.2.2-blue)](https://github.com/songwupei/yazi-quarto)
-[![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
+[![Version](https://img.shields.io/badge/version-0.2.3-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Hover on `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-formatted PDF + DOCX. Zero config.
+A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX) with a single keypress.
 
-在 Yazi 中选中 `.md` / `.qmd`，按 `R` — GB/T 9704 格式 PDF + DOCX 直接生成。零配置。
-
-## Highlights · 亮点
-
-| | |
-|---|---|
-| 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
-| 🧩 **全套自研** | [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展 + 本插件，全部自研 |
-| ⚡ **一键双格式** | 按 `R` 同时输出 PDF + DOCX |
-| 🧹 **干净无残留** | 渲染后仅保留 `_extensions/`，其余自动清除 |
-
-## Pipeline · 管线
-
-```
-.md / .qmd file
-    │
-    ▼
- ~/.yazi-quarto/
- ├─ quarto-gbt9704 extension (auto-installed · 自动安装)
- └─ quarto render
-     ├─ --to gbt9704-pdf  (xelatex)
-     └─ --to gbt9704-docx
-         │
-         ▼
-  output: .pdf + .docx → source dir · 输出至源文件目录
-```
+Yazi 插件：一键将 `.md` / `.qmd` 文件渲染为 **GB/T 9704** 格式的 PDF + DOCX。
 
 ## Install · 安装
 
-### ya pkg (recommended · 推荐)
+### A: ya pkg (recommended · 推荐, Yazi ≥ 25.5.31)
 
 ```sh
 ya pkg add songwupei/yazi-quarto:quarto-render
 ```
 
-### Manual · 手动
+Then add a keymap (see below). 然后添加快捷键。
+
+### B: Manual · 手动
 
 ```bash
-git clone https://github.com/songwupei/yazi-quarto.git /tmp/yazi-quarto
+git clone https://codeberg.org/songwupei/yazi-quarto.git /tmp/yazi-quarto
 bash /tmp/yazi-quarto/install.sh
 ```
 
-## Usage · 使用
-
-Hover on a `.md` or `.qmd` file in Yazi, press **`R`** (`Shift+r`).
-
-在 Yazi 中选中 `.md` 或 `.qmd` 文件，按 **`R`**。
-
-Output `.pdf` + `.docx` appear in the same directory as the source file.
-
-**First run:** auto-creates `~/.yazi-quarto/` and installs the [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) extension.
-
-**首次运行：** 自动创建 `~/.yazi-quarto/` 并安装 quarto-gbt9704 扩展。
-
 ## Keymap · 快捷键
+
+Add to `~/.config/yazi/keymap.toml` under `[mgr]`:
 
 ```toml
 [[mgr.prepend_keymap]]
@@ -69,20 +35,35 @@ run = "plugin quarto-render"
 desc = "Render .md/.qmd → GB/T 9704 PDF + DOCX"
 ```
 
+## Usage · 使用
+
+Hover on a `.md` or `.qmd` file in Yazi and press `R` (`Shift+r`).
+
+在 Yazi 中选中 `.md` 或 `.qmd` 文件，按 `R`。
+
+| File type · 文件类型 | Pipeline · 管线 |
+|---|---|
+| `.md` | copy → save as `.qmd` → quarto render (PDF + DOCX) |
+| `.qmd` | copy → quarto render (PDF + DOCX) |
+
+Output `.pdf` and `.docx` are placed next to the source file.
+Intermediate `.qmd` is preserved in `~/.yazi-quarto/`.
+
+输出 `.pdf` / `.docx` 生成在源文件同目录。中间 `.qmd` 文件保留在 `~/.yazi-quarto/`。
+
+## Dependencies · 依赖
+
+- [Yazi](https://yazi-rs.github.io/) ≥ 25.5.31
+- [quarto](https://quarto.org/) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704)
+- pandoc
+- XeLaTeX (for PDF output)
+
 ## Config · 配置
 
 ```bash
 # Override render script path · 覆盖渲染脚本路径
 export FORGE_RENDER_SCRIPT=/path/to/forge-render.sh
 ```
-
-## Dependencies · 依赖
-
-| Dependency | Note |
-|---|---|
-| [Yazi](https://yazi-rs.github.io/) | Terminal file manager（≥ 25.5.31） |
-| [quarto](https://quarto.org/docs/get-started/) | Document rendering engine |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 format extension (auto-installed) |
 
 ## License · 许可证
 
