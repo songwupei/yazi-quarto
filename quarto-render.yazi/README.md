@@ -65,6 +65,19 @@ Intermediate `.qmd` is preserved in `~/.yazi-quarto/`.
 export FORGE_RENDER_SCRIPT=/path/to/forge-render.sh
 ```
 
+## Uninstall · 卸载
+
+```sh
+# Delete plugin
+rm -rf ~/.config/yazi/plugins/quarto-render.yazi
+
+# Remove keymap entry in ~/.config/yazi/keymap.toml
+# Delete the [[mgr.prepend_keymap]] block with "plugin quarto-render"
+
+# Remove work directory (optional)
+rm -rf ~/.yazi-quarto
+```
+
 ## License · 许可证
 
 MIT — see [LICENSE](LICENSE)
