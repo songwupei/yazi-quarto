@@ -1,16 +1,17 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.2.2)
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.0)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
-#   .md / .qmd → quarto render → gbt9704-pdf + gbt9704-docx
+#   .md / .qmd → quarto render → gbt9704-pdf + gbt9704-docx + gbt9704-html + PNG
 #
 # 工作流：
 #   1. 确保 ~/.yazi-quarto/ 存在并已安装 quarto-gbt9704 扩展
 #   2. 复制输入文件到 ~/.yazi-quarto/
-#   3. quarto render --to gbt9704-pdf  +  --to gbt9704-docx
-#   4. 复制输出回原始目录，清理临时文件
+#   3. quarto render --to gbt9704-pdf + gbt9704-docx + gbt9704-html
+#   4. 浏览器截图 HTML → PNG
+#   5. 复制输出回原始目录，清理临时文件
 #
 # Usage: forge-render.sh <file_path>
 # ============================================================
@@ -83,13 +84,30 @@ _init_workdir() {
     fi
 }
 
-# ─── 清理（保留 _extensions/）───
+# ─── 清理 ───
 _cleanup() {
-    for item in "$WORK_DIR"/*; do
-        if [ "$(basename "$item")" != "_extensions" ]; then
-            rm -rf "$item" 2>/dev/null || true
-        fi
-    done
+    rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}"_files/* 2>/dev/null || true
+    rmdir "$WORK_DIR/${INPUT_BASENAME}"_files 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.pdf" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.docx" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.html" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.png" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.qmd" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
+    rm -f "$WORK_DIR/gbt9704.cls" 2>/dev/null || true
+    rm -f "$WORK_DIR/zhlineskip.sty" 2>/dev/null || true
+}
+
+# ─── 浏览器检测 ───
+_detect_browser() {
+    if command -v google-chrome-stable &>/dev/null; then
+        echo "google-chrome-stable"
+    elif command -v chromium &>/dev/null; then
+        echo "chromium"
+    else
+        echo ""
+    fi
 }
 
 _init_workdir
@@ -118,6 +136,47 @@ if ! quarto render "$INPUT_FILENAME" --to gbt9704-docx 2>&1; then
 fi
 echo "   ✓ DOCX 完成"
 
+echo "🖨️  quarto render --to gbt9704-html ..."
+if quarto render "$INPUT_FILENAME" --to gbt9704-html 2>&1; then
+    echo "   ✓ HTML 完成"
+
+    # ─── HTML → PNG 截图 ───
+    BROWSER=$(_detect_browser)
+    if [ -n "$BROWSER" ] && [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
+        echo "📸 $BROWSER 截图 → PNG ..."
+        PNG_WIDTH=900
+        if "$BROWSER" \
+            --headless --disable-gpu --no-sandbox \
+            --screenshot="$WORK_DIR/${INPUT_BASENAME}.png" \
+            --window-size="${PNG_WIDTH},24000" \
+            --default-background-color=ffffff \
+            --hide-scrollbars \
+            --virtual-time-budget=10000 \
+            "file://${WORK_DIR}/${INPUT_BASENAME}.html" 2>/dev/null; then
+
+            # ─── 裁白边 + 加边距（如果 ImageMagick 可用）───
+            PNG_FILE="$WORK_DIR/${INPUT_BASENAME}.png"
+            if [ -f "$PNG_FILE" ]; then
+                MAGICK_CMD=""
+                command -v magick &>/dev/null && MAGICK_CMD="magick" || {
+                    command -v convert &>/dev/null && MAGICK_CMD="convert"
+                }
+                if [ -n "$MAGICK_CMD" ]; then
+                    "$MAGICK_CMD" "$PNG_FILE" -trim +repage -bordercolor white -border 20x20 "$PNG_FILE" 2>/dev/null || true
+                fi
+                echo "   ✓ PNG 完成 ($(du -h "$PNG_FILE" | cut -f1))"
+            fi
+        else
+            echo -e "  ${YELLOW}⚠  PNG 截图失败（HTML 保留）${NC}"
+        fi
+    elif [ -z "$BROWSER" ]; then
+        echo -e "  ${YELLOW}⚠  未检测到浏览器（chrome/chromium），跳过 PNG 截图${NC}"
+        echo "   💡 安装: sudo pacman -S google-chrome  或  sudo pacman -S chromium"
+    fi
+else
+    echo -e "${YELLOW}⚠  HTML 渲染失败（可能需要 quarto-gbt9704 ≥ v0.3.0）${NC}"
+fi
+
 # ─── 复制输出回原目录 ───
 COPIED=""
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ]; then
@@ -129,6 +188,16 @@ if [ -f "$WORK_DIR/${INPUT_BASENAME}.docx" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.docx" "$ORIG_DIR/"
     echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
     COPIED="${COPIED}docx "
+fi
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.html" "$ORIG_DIR/"
+    echo "   📤 ${INPUT_BASENAME}.html → $ORIG_DIR"
+    COPIED="${COPIED}html "
+fi
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.png" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.png" "$ORIG_DIR/"
+    echo "   📤 ${INPUT_BASENAME}.png → $ORIG_DIR"
+    COPIED="${COPIED}png "
 fi
 
 if [ -z "$COPIED" ]; then

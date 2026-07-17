@@ -1,11 +1,11 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.2.6-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX) with a single keypress.
+A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX + HTML + PNG) with a single keypress.
 
-Yazi 插件：一键将 `.md` / `.qmd` 文件渲染为 **GB/T 9704** 格式的 PDF + DOCX。
+Yazi 插件：一键将 `.md` / `.qmd` 文件渲染为 **GB/T 9704** 格式的 PDF + DOCX + HTML + PNG。
 
 ## Install · 安装
 
@@ -51,19 +51,20 @@ Hover on a `.md` or `.qmd` file in Yazi and press `R` (`Shift+r`).
 
 | File type · 文件类型 | Pipeline · 管线 |
 |---|---|
-| `.md` | copy → quarto render (PDF + DOCX) |
-| `.qmd` | copy → quarto render (PDF + DOCX) |
+| `.md` | copy → quarto render (PDF + DOCX + HTML + PNG) |
+| `.qmd` | copy → quarto render (PDF + DOCX + HTML + PNG) |
 
-Output `.pdf` and `.docx` are placed next to the source file.
+Output `.pdf`, `.docx`, `.html`, and `.png` are placed next to the source file.
 
-输出 `.pdf` / `.docx` 生成在源文件同目录。
+输出 `.pdf` / `.docx` / `.html` / `.png` 生成在源文件同目录。
 
 ## Dependencies · 依赖
 
 - [Yazi](https://yazi-rs.github.io/) ≥ 25.5.31
-- [quarto](https://quarto.org/) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704)
+- [quarto](https://quarto.org/) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) ≥ v0.3.0
 - pandoc
 - XeLaTeX (for PDF output)
+- Chrome/Chromium (optional, for PNG output)
 
 ## Config · 配置
 

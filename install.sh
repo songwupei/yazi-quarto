@@ -190,7 +190,7 @@ _step "快捷键配置"
 KEYMAP_ENTRY='[[mgr.prepend_keymap]]
 on = ["R"]
 run = "plugin quarto-render"
-desc = "Render .md/.qmd → gbt9704-pdf + gbt9704-docx"'
+desc = "Render .md/.qmd → gbt9704-pdf + gbt9704-docx + HTML + PNG"'
 
 if $SKIP_KEYMAP; then
     _info "已跳过快捷键配置 (--no-keymap)"

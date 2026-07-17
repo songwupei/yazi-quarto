@@ -1,6 +1,6 @@
---- quarto-render.yazi v0.2.5
---- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx
---- 快捷键触发 .md / .qmd → quarto + gbt9704 → PDF + DOCX
+--- quarto-render.yazi v0.3.0
+--- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx + gbt9704-html + PNG
+--- 快捷键触发 .md / .qmd → quarto + gbt9704 → PDF + DOCX + HTML + PNG
 ---
 --- 依赖: quarto (quarto.org), quarto-gbt9704 扩展 (自动安装)
 --- 工作目录: ~/.yazi-quarto/
