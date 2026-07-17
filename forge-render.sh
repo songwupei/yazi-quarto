@@ -67,7 +67,7 @@ _init_workdir() {
     echo "🔧 检查 quarto-gbt9704 扩展 ..."
     cd "$WORK_DIR"
 
-    if [ ! -f "_extensions/songwupei/quarto-gbt9704/_extension.yml" ]; then
+    if [ ! -f "_extensions/songwupei/gbt9704/_extension.yml" ]; then
         echo "📦 安装 $EXT_NAME ..."
         if ! quarto add "$EXT_NAME" --no-prompt 2>&1; then
             echo -e "${RED}❌ 扩展安装失败: $EXT_NAME${NC}" >&2
