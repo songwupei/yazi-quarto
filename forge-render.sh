@@ -179,25 +179,26 @@ fi
 
 # ─── 复制输出回原目录 ───
 COPIED=""
+COPY_FMT=""
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.pdf" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
     COPIED="${COPIED}pdf "
+    COPY_FMT="${COPY_FMT}PDF "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.docx" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.docx" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
     COPIED="${COPIED}docx "
+    COPY_FMT="${COPY_FMT}DOCX "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.html" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.html → $ORIG_DIR"
     COPIED="${COPIED}html "
+    COPY_FMT="${COPY_FMT}HTML "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.png" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.png" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.png → $ORIG_DIR"
     COPIED="${COPIED}png "
+    COPY_FMT="${COPY_FMT}PNG "
 fi
 
 if [ -z "$COPIED" ]; then
@@ -205,6 +206,8 @@ if [ -z "$COPIED" ]; then
     _cleanup
     exit 1
 fi
+
+echo "📤 ${COPY_FMT}→ ${ORIG_DIR}"
 
 # ─── 清理 ───
 _cleanup
