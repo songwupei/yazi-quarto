@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.0)
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.1)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -174,7 +174,7 @@ if quarto render "$INPUT_FILENAME" --to gbt9704-html 2>&1; then
         echo "   💡 安装: sudo pacman -S google-chrome  或  sudo pacman -S chromium"
     fi
 else
-    echo -e "${YELLOW}⚠  HTML 渲染失败（可能需要 quarto-gbt9704 ≥ v0.3.0）${NC}"
+    echo -e "${YELLOW}⚠  HTML 渲染失败（可能需要 quarto-gbt9704 ≥ v0.3.1）${NC}"
 fi
 
 # ─── 复制输出回原目录 ───
