@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.3.2-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -83,7 +83,7 @@ export FORGE_RENDER_SCRIPT=/path/to/forge-render.sh
 |---|---|
 | [Yazi](https://yazi-rs.github.io/) | Terminal file manager（≥ 25.5.31） |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 format extension (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 format extension ≥ v0.5.1 (auto-installed; ConTeXt dropped since v0.5.0) |
 
 ## License · 许可证
 

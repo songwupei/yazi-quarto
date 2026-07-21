@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.3.2-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX + HTML + PNG) with a single keypress.
@@ -61,7 +61,7 @@ Output `.pdf`, `.docx`, `.html`, and `.png` are placed next to the source file.
 ## Dependencies · 依赖
 
 - [Yazi](https://yazi-rs.github.io/) ≥ 25.5.31
-- [quarto](https://quarto.org/) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) ≥ v0.3.1
+- [quarto](https://quarto.org/) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) ≥ v0.5.1（ConTeXt 已放弃，仅 PDF/DOCX/HTML）
 - pandoc
 - XeLaTeX (for PDF output)
 - Chrome/Chromium (optional, for PNG output)
