@@ -79,8 +79,6 @@ _init_workdir() {
         echo "✅ 扩展已安装"
     else
         echo "✅ 扩展已就绪"
-        # 尝试更新（失败则忽略）
-        quarto add "$EXT_NAME" --no-prompt 2>/dev/null || true
     fi
 }
 

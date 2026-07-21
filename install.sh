@@ -183,7 +183,26 @@ else
 fi
 
 # ════════════════════════════════════════════════════════════
-# 步骤 3: 快捷键配置
+
+# ════════════════════════════════════════════════════════════
+# 步骤 3: 预安装 quarto-gbt9704 扩展
+# ════════════════════════════════════════════════════════════
+_step "预安装 quarto-gbt9704 扩展"
+
+WORK_DIR="$HOME/.yazi-quarto"
+mkdir -p "$WORK_DIR"
+
+if [ -f "$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml" ]; then
+	_success "quarto-gbt9704 扩展已存在"
+else
+	_info "正在下载 quarto-gbt9704（仅此一次，需联网）..."
+	if quarto add songwupei/quarto-gbt9704 --no-prompt 2>&1; then
+		_success "quarto-gbt9704 扩展已预安装"
+	else
+		_warn "扩展下载失败，首次渲染时将自动重试"
+	fi
+fi
+# 步骤 4: 快捷键配置
 # ════════════════════════════════════════════════════════════
 _step "快捷键配置"
 
