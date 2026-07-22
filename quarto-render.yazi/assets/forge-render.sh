@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.1)
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.4)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -79,8 +79,6 @@ _init_workdir() {
         echo "✅ 扩展已安装"
     else
         echo "✅ 扩展已就绪"
-        # 尝试更新（失败则忽略）
-        quarto add "$EXT_NAME" --no-prompt 2>/dev/null || true
     fi
 }
 
@@ -93,6 +91,7 @@ _cleanup() {
     rm -f "$WORK_DIR/${INPUT_BASENAME}.docx" 2>/dev/null || true
     rm -f "$WORK_DIR/${INPUT_BASENAME}.html" 2>/dev/null || true
     rm -f "$WORK_DIR/${INPUT_BASENAME}.png" 2>/dev/null || true
+    rm -f "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>/dev/null || true
     rm -f "$WORK_DIR/${INPUT_BASENAME}.qmd" 2>/dev/null || true
     rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
     rm -f "$WORK_DIR/gbt9704.cls" 2>/dev/null || true
@@ -117,6 +116,24 @@ cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
 echo "📋 已复制 → $WORK_DIR/$INPUT_FILENAME"
 
 cd "$WORK_DIR"
+
+
+# ─── pandoc filter-only: 生成 .gbt9704.md 中间文件 ───
+FILTER_DIR="$WORK_DIR/_extensions/songwupei/gbt9704/assets/filters"
+echo ""
+echo "📋 生成 .gbt9704.md（filter 处理后的中间 markdown）..."
+if pandoc "$INPUT_FILENAME" \
+    --lua-filter="$FILTER_DIR/gbt9704-metadata.lua" \
+    --lua-filter="$FILTER_DIR/numbering-to-headings.lua" \
+    --lua-filter="$FILTER_DIR/heading-demotion.lua" \
+    --lua-filter="$FILTER_DIR/title-promotion.lua" \
+    --lua-filter="$FILTER_DIR/table-colwidths.lua" \
+    --lua-filter="$FILTER_DIR/gbt9704-emoji.lua" \
+    -t gfm -o "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>&1; then
+    echo "   ✓ .gbt9704.md 完成"
+else
+    echo -e "  ${YELLOW}⚠  .gbt9704.md 生成失败（不影响后续渲染）${NC}"
+fi
 
 # ─── quarto render ───
 echo ""
@@ -179,25 +196,31 @@ fi
 
 # ─── 复制输出回原目录 ───
 COPIED=""
+COPY_FMT=""
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.pdf" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.pdf → $ORIG_DIR"
     COPIED="${COPIED}pdf "
+    COPY_FMT="${COPY_FMT}PDF "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.docx" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.docx" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.docx → $ORIG_DIR"
     COPIED="${COPIED}docx "
+    COPY_FMT="${COPY_FMT}DOCX "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.html" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.html → $ORIG_DIR"
     COPIED="${COPIED}html "
+    COPY_FMT="${COPY_FMT}HTML "
 fi
 if [ -f "$WORK_DIR/${INPUT_BASENAME}.png" ]; then
     cp "$WORK_DIR/${INPUT_BASENAME}.png" "$ORIG_DIR/"
-    echo "   📤 ${INPUT_BASENAME}.png → $ORIG_DIR"
     COPIED="${COPIED}png "
+    COPY_FMT="${COPY_FMT}PNG "
+fi
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" "$ORIG_DIR/"
+    COPIED="${COPIED}md "
+    COPY_FMT="${COPY_FMT}MD "
 fi
 
 if [ -z "$COPIED" ]; then
@@ -205,6 +228,8 @@ if [ -z "$COPIED" ]; then
     _cleanup
     exit 1
 fi
+
+echo "📤 ${COPY_FMT}→ ${ORIG_DIR}"
 
 # ─── 清理 ───
 _cleanup
