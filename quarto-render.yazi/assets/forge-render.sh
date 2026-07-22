@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.3.4)
+# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.0)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -128,6 +128,9 @@ if pandoc "$INPUT_FILENAME" \
     --lua-filter="$FILTER_DIR/heading-demotion.lua" \
     --lua-filter="$FILTER_DIR/title-promotion.lua" \
     --lua-filter="$FILTER_DIR/table-colwidths.lua" \
+    --lua-filter="$FILTER_DIR/format-legal.lua" \
+    --lua-filter="$FILTER_DIR/fcolumn.lua" \
+    --lua-filter="$FILTER_DIR/fix-table.lua" \
     --lua-filter="$FILTER_DIR/gbt9704-emoji.lua" \
     -t gfm -o "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>&1; then
     echo "   ✓ .gbt9704.md 完成"
