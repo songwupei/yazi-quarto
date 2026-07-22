@@ -192,13 +192,17 @@ fi
 # ════════════════════════════════════════════════════════════
 # 步骤 3: 预安装 quarto-gbt9704 扩展
 # ════════════════════════════════════════════════════════════
-_step "预安装 quarto-gbt9704 扩展"
 
 WORK_DIR="$HOME/.yazi-quarto"
 mkdir -p "$WORK_DIR"
 
 if [ -f "$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml" ]; then
-	_success "quarto-gbt9704 扩展已存在"
+	_installed_ver=$(grep -oP 'version:\\s*\\K[0-9.]+' "$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml" 2>/dev/null || echo "?")
+	_success "quarto-gbt9704 扩展已存在 (v${_installed_ver})"
+	if _confirm "检查并更新扩展到最新版？"; then
+		_info "正在更新..."
+		quarto add songwupei/quarto-gbt9704 --no-prompt 2>/dev/null && _success "扩展已更新" || _warn "更新失败，当前版本继续可用"
+	fi
 else
 	_info "正在下载 quarto-gbt9704（仅此一次，需联网）..."
 	if quarto add songwupei/quarto-gbt9704 --no-prompt 2>&1; then
@@ -220,7 +224,16 @@ if $SKIP_KEYMAP; then
     _info "已跳过快捷键配置 (--no-keymap)"
 elif [ -f "$KEYMAP_FILE" ]; then
     if grep -q "quarto-render" "$KEYMAP_FILE"; then
-        _success "快捷键 R 已配置"
+        _success "快捷键 R 已配置为 quarto-render"
+    elif grep -q 'on = \["R"\]' "$KEYMAP_FILE" || grep -q 'on = "R"' "$KEYMAP_FILE"; then
+        _warn "快捷键 R 已被其他插件占用"
+        if _confirm "仍添加 quarto-render（需手动修改 keymap 解决冲突）？"; then
+            echo "" >> "$KEYMAP_FILE"
+            echo "$KEYMAP_ENTRY" >> "$KEYMAP_FILE"
+            _success "已添加（注意：keymap 中有重复的 R 快捷键）"
+        else
+            _info "跳过快捷键配置"
+        fi
     else
         if _confirm "添加快捷键 R（在 keymap.toml 的 [mgr] 中）？"; then
             if grep -q '^\[mgr\]' "$KEYMAP_FILE"; then
