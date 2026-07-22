@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.3.1
+--- quarto-render.yazi v0.3.4
 --- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx + gbt9704-html + PNG
 --- 快捷键触发 .md / .qmd → quarto + gbt9704 → PDF + DOCX + HTML + PNG
 ---
@@ -40,19 +40,14 @@ local function extract_error(stderr)
 end
 
 local function extract_summary(stdout)
-    local lines = {}
+    -- 提取含 "📤" 摘要行
     for line in (stdout or ""):gmatch("[^\r\n]+") do
         local clean = line:gsub("\27%[[0-9;]*[a-zA-Z]", "")
-        if #clean > 0 then
-            lines[#lines + 1] = clean
+        if clean:match("📤") then
+            return clean
         end
     end
-    local start = math.max(1, #lines - 3)
-    local result = {}
-    for i = start, #lines do
-        result[#result + 1] = lines[i]
-    end
-    return #result > 0 and table.concat(result, "\n") or "Done!"
+    return "Done!"
 end
 
 local function run_render(file_path)

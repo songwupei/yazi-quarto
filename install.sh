@@ -128,7 +128,7 @@ _info "项目目录 : ${GREEN}$PROJECT_DIR${NC}"
 _info "用户配置  : ${GREEN}$YAZI_CONFIG${NC}"
 
 # 校验项目完整性
-for f in "$PLUGIN_SRC/main.lua" "$PLUGIN_SRC/forge-render.sh"; do
+for f in "$PLUGIN_SRC/main.lua" "$PLUGIN_SRC/assets/forge-render.sh"; do
     if [ ! -f "$f" ]; then
         _error "项目文件缺失: $f（请确保在完整的 git 仓库中运行）"
         exit 1
