@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.3.2-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.3.3-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -14,8 +14,9 @@ Hover on `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-formatted P
 |---|---|
 | 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
 | 🧩 **全套自研** | [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展 + 本插件，全部自研 |
-| ⚡ **一键四格式** | 按 `R` 同时输出 PDF + DOCX + HTML + PNG |
+| ⚡ **一键五文件** | 按 `R` 同时输出 PDF + DOCX + HTML + PNG + `.gbt9704.md` |
 | 🧹 **干净无残留** | 渲染后仅保留 `_extensions/`，其余自动清除 |
+| 📋 **filter 中间件** | `.gbt9704.md` 保存 filter 处理后的中间 markdown，可复现可 diff |
 
 ## Pipeline · 管线
 
@@ -31,7 +32,7 @@ Hover on `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-formatted P
      └─ --to gbt9704-html → Chrome headless → PNG
          │
          ▼
-  output: .pdf + .docx + .html + .png → source dir · 输出至源文件目录
+  output: .pdf + .docx + .html + .png + .gbt9704.md → source dir
 ```
 
 ## Install · 安装
@@ -55,7 +56,9 @@ Hover on a `.md` or `.qmd` file in Yazi, press **`R`** (`Shift+r`).
 
 在 Yazi 中选中 `.md` 或 `.qmd` 文件，按 **`R`**。
 
-Output `.pdf` + `.docx` + `.html` + `.png` appear in the same directory as the source file.
+Output `.pdf` + `.docx` + `.html` + `.png` + `.gbt9704.md` appear in the same directory as the source file.
+
+`.gbt9704.md` 是 filter 管道处理后的中间 markdown，记录了编号转换、标题调整、表格列宽注入等结果，可用于复现渲染和 diff 对比。
 
 **First run:** auto-creates `~/.yazi-quarto/` and installs the [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) extension.
 

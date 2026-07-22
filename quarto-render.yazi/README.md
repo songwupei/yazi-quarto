@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.3.2-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.3.3-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.md` / `.qmd` files into **GB/T 9704** format (PDF + DOCX + HTML + PNG) with a single keypress.
