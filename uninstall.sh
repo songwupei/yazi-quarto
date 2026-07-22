@@ -67,17 +67,11 @@ echo ""
 echo -e "${BOLD}2. 快捷键${NC}"
 if [ -f "$KEYMAP_FILE" ] && grep -q "quarto-render" "$KEYMAP_FILE"; then
     _info "目标: $KEYMAP_FILE 中的 quarto-render 条目"
-    if _confirm "删除快捷键配置？"; then
-        # 删除包含 "quarto-render" 的行及其上下的空行/注释
-        sed -i '/\[\[mgr.prepend_keymap\]\]/,/run = "plugin quarto-render"/{
-            /quarto-render/d
-            /\[\[mgr.prepend_keymap\]\]/d
-            /desc = "Render/d
-        }' "$KEYMAP_FILE"
-        # 清理连续空行
-        sed -i '/^$/{ N; /^\n$/d; }' "$KEYMAP_FILE"
-        _done "已清理"
-    else
+	    if _confirm "删除快捷键配置？"; then
+	        # 精确删除 quarto-render 对应的 [[mgr.prepend_keymap]] 块
+	        sed -i '/\[\[mgr.prepend_keymap\]\]/{ N; N; /quarto-render/d; }' "$KEYMAP_FILE"
+	        _done "已清理"
+	    else
         _skip "跳过"
     fi
 else
