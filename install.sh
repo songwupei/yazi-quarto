@@ -158,9 +158,14 @@ if [ -L "$PLUGIN_DST" ]; then
         fi
     fi
 elif [ -d "$PLUGIN_DST" ]; then
-    _error "目标位置是普通目录（非符号链接）: $PLUGIN_DST"
-    _error "请手动删除后重试: rm -rf $PLUGIN_DST"
-    exit 1
+    _warn "目标位置是普通目录（非符号链接）: $PLUGIN_DST"
+    if _confirm "删除旧目录并创建符号链接？"; then
+        rm -rf "$PLUGIN_DST"
+        ln -s "$PLUGIN_SRC" "$PLUGIN_DST"
+        _success "已替换为插件链接 → $PLUGIN_SRC"
+    else
+        _info "跳过插件安装"
+    fi
 elif [ -e "$PLUGIN_DST" ]; then
     _error "目标位置已存在文件: $PLUGIN_DST"
     exit 1
