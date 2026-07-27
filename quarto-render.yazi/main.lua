@@ -1,22 +1,24 @@
---- quarto-render.yazi v0.4.0
---- Yazi plugin: one-key render .md/.qmd → gbt9704-pdf + gbt9704-docx + gbt9704-html + PNG
---- 快捷键触发 .md / .qmd → quarto + gbt9704 → PDF + DOCX + HTML + PNG
+--- quarto-render.yazi v0.4.1
+--- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704-formatted output
+--- 快捷键触发 → typst compile 或 quarto render → PDF + PNG/DOCX
 ---
---- 依赖: quarto (quarto.org), quarto-gbt9704 扩展 (自动安装)
---- 工作目录: ~/.yazi-quarto/
+--- 依赖: typst (typst.app) 或 quarto (quarto.org)
 ---
 --- Keymap / 快捷键:
 ---   [[mgr.prepend_keymap]] on=["R"] run="plugin quarto-render"
 
 local M = {}
 
--- Script path: env var first, fallback to the script bundled in this plugin
--- 脚本路径：优先环境变量，否则回退到插件自带的 forge-render.sh
-local SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
-    or (function()
-        local cfg = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
-        return cfg .. "/yazi/plugins/quarto-render.yazi/assets/forge-render.sh"
-    end)()
+-- Config dir base / 配置目录基础路径
+local CFG = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+local PLUGIN_DIR = CFG .. "/yazi/plugins/quarto-render.yazi"
+
+-- Script paths: env var first, fallback to bundled script / 脚本路径
+local QUARTO_SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
+    or (PLUGIN_DIR .. "/assets/quarto-render.sh")
+
+local TYPST_SCRIPT = os.getenv("TYPST_RENDER_SCRIPT")
+    or (PLUGIN_DIR .. "/assets/typst-render.sh")
 
 local function extract_error(stderr)
     -- Extract meaningful error lines (skip ANSI/empty, keep last lines)
@@ -40,7 +42,7 @@ local function extract_error(stderr)
 end
 
 local function extract_summary(stdout)
-    -- 提取含 "📤" 摘要行
+    -- Extract summary line with 📤
     for line in (stdout or ""):gmatch("[^\r\n]+") do
         local clean = line:gsub("\27%[[0-9;]*[a-zA-Z]", "")
         if clean:match("📤") then
@@ -50,9 +52,9 @@ local function extract_summary(stdout)
     return "Done!"
 end
 
-local function run_render(file_path)
+local function run_script(script, file_path)
     local output, err_code = Command("bash")
-        :arg(SCRIPT)
+        :arg(script)
         :arg(file_path)
         :stdout(Command.PIPED)
         :stderr(Command.PIPED)
@@ -60,7 +62,7 @@ local function run_render(file_path)
 
     if err_code ~= nil then
         ya.notify({
-            title = "Quarto Render ✗",
+            title = "Render ✗",
             content = "Script execution failed: " .. tostring(err_code),
             timeout = 6.0,
             level = "error",
@@ -70,7 +72,7 @@ local function run_render(file_path)
 
     if not output.status.success then
         ya.notify({
-            title = "Quarto Render ✗",
+            title = "Render ✗",
             content = extract_error(output.stderr),
             timeout = 8.0,
             level = "error",
@@ -79,7 +81,7 @@ local function run_render(file_path)
     end
 
     ya.notify({
-        title = "Quarto Render ✓",
+        title = "Render ✓",
         content = extract_summary(output.stdout),
         timeout = 5.0,
         level = "info",
@@ -99,7 +101,7 @@ function M:entry(_)
 
     if not file_path then
         ya.notify({
-            title = "Quarto Render",
+            title = "Render",
             content = "No file hovered · 未选中文件",
             timeout = 3.0,
             level = "warn",
@@ -107,25 +109,40 @@ function M:entry(_)
         return
     end
 
-    if not file_path:match("%.md$") and not file_path:match("%.qmd$") then
+    -- Detect file type and route / 检测文件类型并分流
+    local is_typ = file_path:match("%.typ$")
+    local is_md = file_path:match("%.md$")
+    local is_qmd = file_path:match("%.qmd$")
+
+    local script = nil
+    local engine = nil
+
+    if is_typ then
+        script = TYPST_SCRIPT
+        engine = "Typst"
+    elseif is_md or is_qmd then
+        script = QUARTO_SCRIPT
+        engine = "Quarto"
+    else
         ya.notify({
-            title = "Quarto Render",
-            content = "仅支持 .md / .qmd:\n" .. file_path,
+            title = "Render",
+            content = "仅支持 .typ / .md / .qmd:\n" .. file_path,
             timeout = 4.0,
             level = "warn",
         })
         return
     end
 
-    -- Show progress notification before blocking call
+    -- Show progress notification / 进度通知
+    local fname = file_path:match("[^/]+$")
     ya.notify({
-        title = "Quarto Render",
-        content = "⏳ 渲染中...\n" .. file_path:match("[^/]+$"),
+        title = "Render · " .. engine,
+        content = "⏳ 渲染中...\n" .. fname,
         timeout = 2.0,
         level = "info",
     })
 
-    run_render(file_path)
+    run_script(script, file_path)
 end
 
 return M

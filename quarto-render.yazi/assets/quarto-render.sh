@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# forge-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.0)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.1)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #

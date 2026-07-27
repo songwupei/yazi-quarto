@@ -112,7 +112,8 @@ _check_cmd() {
 # ════════════════════════════════════════════════════════════
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_SRC="$PROJECT_DIR/quarto-render.yazi"
-FORGE_SCRIPT="$PLUGIN_SRC/assets/forge-render.sh"
+QUARTO_SCRIPT="$PLUGIN_SRC/assets/quarto-render.sh"
+TYPST_SCRIPT="$PLUGIN_SRC/assets/typst-render.sh"
 MAIN_LUA="$PLUGIN_SRC/main.lua"
 
 YAZI_CONFIG="${YAZI_CONFIG_HOME:-$HOME/.config/yazi}"
@@ -128,7 +129,7 @@ _info "项目目录 : ${GREEN}$PROJECT_DIR${NC}"
 _info "用户配置  : ${GREEN}$YAZI_CONFIG${NC}"
 
 # 校验项目完整性
-for f in "$PLUGIN_SRC/main.lua" "$PLUGIN_SRC/assets/forge-render.sh"; do
+for f in "$MAIN_LUA" "$QUARTO_SCRIPT" "$TYPST_SCRIPT"; do
     if [ ! -f "$f" ]; then
         _error "项目文件缺失: $f（请确保在完整的 git 仓库中运行）"
         exit 1
@@ -175,16 +176,26 @@ else
 fi
 
 # ════════════════════════════════════════════════════════════
-# 步骤 2: 检查 quarto
+# 步骤 2: 检查 quarto 和 typst
 # ════════════════════════════════════════════════════════════
 _step "检查 quarto"
 
 if command -v quarto &>/dev/null; then
     _success "quarto: $(quarto --version 2>/dev/null || echo 'installed')"
 else
-    _warn "未安装 quarto（渲染功能将无法使用）"
+    _warn "未安装 quarto（.md/.qmd 渲染将无法使用）"
     _info "安装方法: https://quarto.org/docs/get-started/"
     TODO+=("安装 quarto: https://quarto.org/docs/get-started/")
+fi
+
+_step "检查 typst"
+
+if command -v typst &>/dev/null; then
+    _success "typst: $(typst --version 2>/dev/null || echo 'installed')"
+else
+    _warn "未安装 typst（.typ 渲染将无法使用）"
+    _info "安装方法: https://github.com/typst/typst#installation"
+    TODO+=("安装 typst: https://github.com/typst/typst#installation")
 fi
 
 # ════════════════════════════════════════════════════════════
@@ -218,7 +229,7 @@ _step "快捷键配置"
 KEYMAP_ENTRY='[[mgr.prepend_keymap]]
 on = ["R"]
 run = "plugin quarto-render"
-desc = "Render .md/.qmd → gbt9704-pdf + gbt9704-docx + HTML + PNG"'
+desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"'
 
 if $SKIP_KEYMAP; then
     _info "已跳过快捷键配置 (--no-keymap)"
@@ -295,12 +306,17 @@ fi
 
 echo ""
 echo -e "${BOLD}环境变量（可选）:${NC}"
-echo -e "  export FORGE_RENDER_SCRIPT=${FORGE_SCRIPT}"
+echo -e "  export FORGE_RENDER_SCRIPT=${QUARTO_SCRIPT}"
+echo -e "  export TYPST_RENDER_SCRIPT=${TYPST_SCRIPT}"
+echo -e "  export TYPST_PNG_MODE=multi    # multi（逐页）| single（仅首页）"
+echo -e "  export TYPST_PNG_PPI=300       # PNG 分辨率"
 
 echo ""
 echo -e "${GREEN}${BOLD}安装完成！${NC}"
-echo "  在 Yazi 中选中 .md 或 .qmd 文件，按 ${BOLD}R${NC} 渲染。"
-echo "  首次运行会自动在 ~/.yazi-quarto/ 安装 quarto-gbt9704 扩展。"
+echo "  在 Yazi 中选中 .typ / .md / .qmd 文件，按 ${BOLD}R${NC} 渲染。"
+echo "  .typ → typst compile → PDF + PNG"
+echo "  .md/.qmd → quarto render → PDF + DOCX + HTML + PNG"
+echo "  首次运行 quarto 时会自动在 ~/.yazi-quarto/ 安装 quarto-gbt9704 扩展。"
 
 if [ ${#ERRORS[@]} -gt 0 ]; then
     exit 1
