@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.4.1-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.4.3-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -87,6 +87,9 @@ Output files appear in the same directory as the source file.
 ### Typst
 
 ```bash
+# Enable/disable PNG output (default true). Set false for PDF only.
+export TYPST_PNG=true
+
 # PNG output mode: multi (default, per-page) | single (first page only)
 export TYPST_PNG_MODE=multi
 

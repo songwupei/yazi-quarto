@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.4.1-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.4.3-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.typ` / `.md` / `.qmd` files into **GB/T 9704** format with a single keypress.
@@ -90,6 +90,10 @@ typst compile
 ### Typst 配置
 
 ```bash
+# Enable/disable PNG output · 是否输出 PNG（默认 true）
+# Set false to output PDF only · false 仅输出 PDF
+export TYPST_PNG=true
+
 # PNG output mode · PNG 输出模式
 #   multi  — one PNG per page (default · 默认，逐页)
 #   single — first page only (仅首页)
