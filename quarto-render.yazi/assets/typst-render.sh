@@ -83,10 +83,9 @@ if [ "$PNG_MODE" = "single" ]; then
         echo -e "  ${YELLOW}⚠  PNG 编译失败${NC}"
     fi
 else
-    # multi: typst 自动生成 file_1.png, file_2.png ...
-    if typst compile --ppi "$PNG_PPI" "$INPUT_FILENAME" "${INPUT_BASENAME}.png" 2>&1; then
-        # 列出生成的 PNG 文件
-        png_count=$(ls "${INPUT_BASENAME}"_*.png "${INPUT_BASENAME}.png" 2>/dev/null | wc -l || echo 0)
+    # multi: typst 需要 {0p} 页码模板 → file_01.png, file_02.png ...
+    if typst compile --ppi "$PNG_PPI" "$INPUT_FILENAME" "${INPUT_BASENAME}_{0p}.png" 2>&1; then
+        png_count=$(ls "${INPUT_BASENAME}"_*.png 2>/dev/null | wc -l)
         echo "   ✓ PNG 完成（${png_count} 页）"
         PNG_OK=true
     else
