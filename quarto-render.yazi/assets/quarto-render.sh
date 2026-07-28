@@ -131,7 +131,6 @@ if pandoc "$INPUT_FILENAME" \
     --lua-filter="$FILTER_DIR/table-colwidths.lua" \
     --lua-filter="$FILTER_DIR/format-legal.lua" \
     --lua-filter="$FILTER_DIR/fcolumn.lua" \
-    --lua-filter="$FILTER_DIR/fix-table.lua" \
     --lua-filter="$FILTER_DIR/gbt9704-emoji.lua" \
     -t gfm -o "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>&1; then
     echo "   ✓ .gbt9704.md 完成"
