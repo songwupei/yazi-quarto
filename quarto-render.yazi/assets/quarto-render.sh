@@ -127,6 +127,7 @@ if pandoc "$INPUT_FILENAME" \
     --lua-filter="$FILTER_DIR/numbering-to-headings.lua" \
     --lua-filter="$FILTER_DIR/heading-demotion.lua" \
     --lua-filter="$FILTER_DIR/title-promotion.lua" \
+    --lua-filter="$FILTER_DIR/format-zhidu.lua" \
     --lua-filter="$FILTER_DIR/table-colwidths.lua" \
     --lua-filter="$FILTER_DIR/format-legal.lua" \
     --lua-filter="$FILTER_DIR/fcolumn.lua" \
