@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.1)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.5)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -111,9 +111,18 @@ _detect_browser() {
 
 _init_workdir
 
-# ─── 复制输入文件到工作目录 ───
+# ─── 复制输入文件 + include 目标到工作目录 ───
 cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
 echo "📋 已复制 → $WORK_DIR/$INPUT_FILENAME"
+
+# 复制 {{< include ... >}} 引用的文件
+grep -oP '\{\{<\s*include\s+\K[^>]+' "$INPUT_FILE" 2>/dev/null | while read -r inc; do
+    inc=$(echo "$inc" | sed 's/\s*>\s*$//' | xargs)
+    if [ -n "$inc" ] && [ -f "$ORIG_DIR/$inc" ]; then
+        cp "$ORIG_DIR/$inc" "$WORK_DIR/$inc"
+        echo "📋 include → $WORK_DIR/$inc"
+    fi
+done
 
 cd "$WORK_DIR"
 
