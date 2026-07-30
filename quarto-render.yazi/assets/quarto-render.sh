@@ -116,8 +116,8 @@ cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
 echo "📋 已复制 → $WORK_DIR/$INPUT_FILENAME"
 
 # 复制 {{< include ... >}} 引用的文件
-grep -oP '\{\{<\s*include\s+\K[^>]+' "$INPUT_FILE" 2>/dev/null | while read -r inc; do
-    inc=$(echo "$inc" | sed 's/\s*>\s*$//' | xargs)
+for inc in $(sed -n 's/.*{{<\s*include\s\+\([^>]*\)\s*>.*/\1/p' "$INPUT_FILE" 2>/dev/null); do
+    inc=$(echo "$inc" | xargs)
     if [ -n "$inc" ] && [ -f "$ORIG_DIR/$inc" ]; then
         cp "$ORIG_DIR/$inc" "$WORK_DIR/$inc"
         echo "📋 include → $WORK_DIR/$inc"
