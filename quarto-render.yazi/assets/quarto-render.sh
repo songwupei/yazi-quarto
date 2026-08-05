@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.1)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.2)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -91,6 +91,32 @@ _init_workdir() {
             echo "✅ textbook 扩展已安装"
         fi
     fi
+
+    # ─── 同步布局: gbt9704-layout.json → .lua / .def ───
+    _sync_layout() {
+        local gbt_dir=""
+        # 找到 gbt9704 扩展目录
+        for d in "_extensions/songwupei/gbt9704" "_extensions/gbt9704"; do
+            if [ -f "$d/_extension.yml" ]; then gbt_dir="$d"; break; fi
+        done
+        if [ -z "$gbt_dir" ]; then return; fi
+
+        local gen="${gbt_dir}/assets/scripts/json2def.py"
+        if [ ! -f "$gen" ]; then return; fi
+
+        local json="${gbt_dir}/gbt9704-layout.json"
+        local lua="${gbt_dir}/gbt9704-layout.lua"
+        local def="${gbt_dir}/gbt9704-layout.def"
+
+        # 仅在 JSON 比 .lua 新时才重新生成
+        if [ "$json" -nt "$lua" ]; then
+            echo "🔄 同步布局: gbt9704-layout.json → .lua / .def ..."
+            python3 "$gen" "$json" --lua > "$lua" 2>&1 || true
+            python3 "$gen" "$json" > "$def" 2>&1 || true
+            echo "✅ 布局已同步"
+        fi
+    }
+    _sync_layout
 }
 
 # ─── 清理 ───
