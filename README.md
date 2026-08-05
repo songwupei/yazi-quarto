@@ -1,12 +1,12 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.4.5-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-formatted PDF + more. Zero config.
+Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — auto-detects format from YAML frontmatter, renders to PDF + more. Zero config. Supports GB/T 9704 government docs and textbook layouts.
 
-在 Yazi 中选中 `.typ` / `.md` / `.qmd`，按 `R` — GB/T 9704 格式 PDF 直接生成。零配置。
+在 Yazi 中选中 `.typ` / `.md` / `.qmd`，按 `R` — 自动检测 YAML 格式、一键生成 PDF。零配置。支持 GB/T 9704 公文和教科书排版。
 
 ## Highlights · 亮点
 
@@ -14,7 +14,8 @@ Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — out comes a GB/T 9704-fo
 |---|---|
 | 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
 | 🔤 **Typst + Quarto 双引擎** | `.typ` → typst compile，`.md/.qmd` → quarto render，自动识别分流 |
-| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展，全部自研 |
+| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展，支持公文 (gbt9704) 和教科书 (textbook) 两种版式 |
+| 🎯 **自动识别格式** | 读取 YAML `format:` 字段，自动选择 gbt9704-pdf 或 textbook-pdf |
 | ⚡ **一键多文件** | 按 `R` 根据文件类型自动选择引擎输出 |
 | 🧹 **干净无残留** | Typst 零中间文件；Quarto 渲染后仅保留 `_extensions/`，其余自动清除 |
 | 📋 **filter 中间件** | `.gbt9704.md` 保存 filter 处理后的中间 markdown，可复现可 diff |
@@ -43,15 +44,21 @@ No temp files, no cleanup needed. Output goes to source directory.
     │
     ▼
  ~/.yazi-quarto/
- ├─ quarto-gbt9704 extension (auto-installed · 自动安装)
+ ├─ extensions (auto-installed · 自动安装)
+ │   ├─ songwupei/gbt9704  → GB/T 9704 公文格式
+ │   └─ textbook           → 教科书排版格式
  └─ quarto render
-     ├─ --to gbt9704-pdf  (xelatex)
-     ├─ --to gbt9704-docx
-     └─ --to gbt9704-html → Chrome headless → PNG
+     ├─ auto-detect format from YAML `format:` field
+     ├─ gbt9704:  PDF + DOCX + HTML → Chrome headless → PNG
+     └─ textbook: PDF only
          │
          ▼
-  output: .pdf + .docx + .html + .png + .gbt9704.md → source dir
+  output → source dir
 ```
+
+Format auto-detection: reads `format:` in YAML frontmatter.
+- `format: textbook-pdf` → `--to textbook-pdf`
+- default → `--to gbt9704-pdf`
 
 ## Install · 安装
 
@@ -74,11 +81,14 @@ Hover on a `.typ`, `.md`, or `.qmd` file in Yazi, press **`R`** (`Shift+r`).
 
 在 Yazi 中选中 `.typ`、`.md` 或 `.qmd` 文件，按 **`R`**。
 
-| File type | Engine | Output |
+| File type | Engine | Format Detection | Output |
 |---|---|---|
-| `.typ` | typst | PDF + PNG |
-| `.md` | quarto | PDF + DOCX + HTML + PNG |
-| `.qmd` | quarto | PDF + DOCX + HTML + PNG |
+| `.typ` | typst | N/A | PDF + PNG |
+| `.md` | quarto | `format:` in YAML | PDF + DOCX + HTML + PNG |
+| `.qmd` | quarto | `format:` in YAML | PDF (textbook: PDF only) |
+
+
+> **Format auto-detection**: `.qmd` with `format: textbook-pdf` → textbook layout (B5, Noto Serif/Sans TC, 14pt, traditional Chinese). Default → gbt9704 (A4, GB/T 9704 government doc).
 
 Output files appear in the same directory as the source file.
 
@@ -121,7 +131,7 @@ desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"
 | [typst](https://typst.app/) | Typst compiler (for `.typ` files) |
 | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) | GB/T 9704 Typst package ≥ v0.2.0 |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine (for `.md`/`.qmd` files) |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 format extension ≥ v0.5.1 (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + textbook format extension ≥ v0.6.11 (auto-installed) |
 
 ## License · 许可证
 

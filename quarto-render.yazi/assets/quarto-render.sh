@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.4.5)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.0)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -96,6 +96,7 @@ _cleanup() {
     rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
     rm -f "$WORK_DIR/gbt9704.cls" 2>/dev/null || true
     rm -f "$WORK_DIR/zhlineskip.sty" 2>/dev/null || true
+    rm -rf "$WORK_DIR/images" 2>/dev/null || true
 }
 
 # ─── 浏览器检测 ───
@@ -124,10 +125,47 @@ for inc in $(sed -n 's/.*{{<\s*include\s\+\([^>]*\)\s*>.*/\1/p' "$INPUT_FILE" 2>
     fi
 done
 
+# 复制 images/ 目录（如果存在）
+if [ -d "$ORIG_DIR/images" ]; then
+    cp -r "$ORIG_DIR/images" "$WORK_DIR/images" 2>/dev/null
+    echo "📋 images/ → $WORK_DIR/images/"
+fi
+
 cd "$WORK_DIR"
 
+# ─── 格式检测：从 YAML frontmatter 读取 format 字段 ───
+_detect_format() {
+    local file="$1"
+    local fmt=""
+    if [ -f "$file" ]; then
+        # 提取 YAML frontmatter 中的 format: 字段值
+        fmt=$(sed -n '/^---$/,/^---$/p' "$file" | grep -E '^\s*format:\s*' | head -1 | sed 's/.*format:\s*//' | xargs)
+    fi
+    # 默认 gbt9704-pdf；如果指定了 textbook-pdf 则使用 textbook-pdf
+    if [ "$fmt" = "textbook-pdf" ]; then
+        echo "textbook"
+    else
+        echo "gbt9704"
+    fi
+}
+
+# ─── PDF-only 检测：textbook 格式仅支持 PDF ───
+_is_pdf_only() {
+    local fmt="$1"
+    [ "$fmt" = "textbook" ]
+}
+
+FORMAT=$(_detect_format "$INPUT_FILE")
+PDF_ONLY=$(_is_pdf_only "$FORMAT" && echo true || echo false)
+
+echo "🎯 检测到格式: ${FORMAT}-pdf"
+if $PDF_ONLY; then
+    echo "ℹ️  ${FORMAT} 格式仅支持 PDF 输出"
+fi
 
 # ─── pandoc filter-only: 生成 .gbt9704.md 中间文件 ───
+# (仅 gbt9704 格式；textbook 格式跳过)
+if ! $PDF_ONLY; then
 FILTER_DIR="$WORK_DIR/_extensions/songwupei/gbt9704/assets/filters"
 echo ""
 echo "📋 生成 .gbt9704.md（filter 处理后的中间 markdown）..."
@@ -146,27 +184,29 @@ if pandoc "$INPUT_FILENAME" \
 else
     echo -e "  ${YELLOW}⚠  .gbt9704.md 生成失败（不影响后续渲染）${NC}"
 fi
+fi  # if ! $PDF_ONLY
 
 # ─── quarto render ───
 echo ""
-echo "🖨️  quarto render --to gbt9704-pdf ..."
-if ! quarto render "$INPUT_FILENAME" --to gbt9704-pdf 2>&1; then
+echo "🖨️  quarto render --to ${FORMAT}-pdf ..."
+if ! quarto render "$INPUT_FILENAME" --to ${FORMAT}-pdf 2>&1; then
     echo -e "${RED}❌ PDF 渲染失败${NC}" >&2
     _cleanup
     exit 1
 fi
 echo "   ✓ PDF 完成"
 
-echo "🖨️  quarto render --to gbt9704-docx ..."
-if ! quarto render "$INPUT_FILENAME" --to gbt9704-docx 2>&1; then
+if ! $PDF_ONLY; then
+echo "🖨️  quarto render --to ${FORMAT}-docx ..."
+if ! quarto render "$INPUT_FILENAME" --to ${FORMAT}-docx 2>&1; then
     echo -e "${RED}❌ DOCX 渲染失败${NC}" >&2
     _cleanup
     exit 1
 fi
 echo "   ✓ DOCX 完成"
 
-echo "🖨️  quarto render --to gbt9704-html ..."
-if quarto render "$INPUT_FILENAME" --to gbt9704-html 2>&1; then
+echo "🖨️  quarto render --to ${FORMAT}-html ..."
+if quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 2>&1; then
     echo "   ✓ HTML 完成"
 
     # ─── HTML → PNG 截图 ───
@@ -205,6 +245,7 @@ if quarto render "$INPUT_FILENAME" --to gbt9704-html 2>&1; then
 else
     echo -e "${YELLOW}⚠  HTML 渲染失败（可能需要 quarto-gbt9704 ≥ v0.3.1）${NC}"
 fi
+fi  # if ! $PDF_ONLY
 
 # ─── 复制输出回原目录 ───
 COPIED=""
