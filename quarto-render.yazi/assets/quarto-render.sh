@@ -80,6 +80,14 @@ _init_workdir() {
     else
         echo "✅ 扩展已就绪"
     fi
+
+    # Ensure textbook extension symlink (local dev, no quarto add yet)
+    if [ ! -d "_extensions/textbook" ]; then
+        local TEXTBOOK_SRC="/home/song/NutstoreFiles/projects/quarto-gbt9704/_extensions/textbook"
+        if [ -d "$TEXTBOOK_SRC" ]; then
+            ln -sf "$TEXTBOOK_SRC" "_extensions/textbook"
+        fi
+    fi
 }
 
 # ─── 清理 ───
