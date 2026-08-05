@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.0)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.1)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -13,7 +13,7 @@
 #   4. 浏览器截图 HTML → PNG
 #   5. 复制输出回原始目录，清理临时文件
 #
-# Usage: forge-render.sh <file_path>
+# Usage: quarto-render.sh <file_path> [gbt9704|textbook]
 # ============================================================
 set -euo pipefail
 
@@ -29,11 +29,12 @@ EXT_NAME="songwupei/quarto-gbt9704"
 
 # ─── 参数检查 ───
 if [ $# -lt 1 ]; then
-    echo -e "${RED}❌ 用法: $0 <file_path>${NC}" >&2
+    echo -e "${RED}❌ 用法: $0 <file_path> [gbt9704|textbook]${NC}" >&2
     exit 1
 fi
 
 INPUT_FILE="$1"
+FORCE_FORMAT="${2:-}"   # 显式指定格式，跳过自动检测
 
 if [ ! -f "$INPUT_FILE" ]; then
     echo -e "${RED}❌ 文件不存在: $INPUT_FILE${NC}" >&2
@@ -81,11 +82,13 @@ _init_workdir() {
         echo "✅ 扩展已就绪"
     fi
 
-    # Ensure textbook extension symlink (local dev, no quarto add yet)
-    if [ ! -d "_extensions/textbook" ]; then
-        local TEXTBOOK_SRC="/home/song/NutstoreFiles/projects/quarto-gbt9704/_extensions/textbook"
-        if [ -d "$TEXTBOOK_SRC" ]; then
-            ln -sf "$TEXTBOOK_SRC" "_extensions/textbook"
+    # Install textbook extension (independent repo)
+    if [ ! -d "_extensions/songwupei/textbook" ] && [ ! -d "_extensions/textbook" ]; then
+        echo "📦 安装 textbook 扩展 ..."
+        if ! quarto add songwupei/quarto-textbook --no-prompt 2>&1; then
+            echo -e "${YELLOW}⚠  textbook 扩展安装失败（不影响 gbt9704 渲染）${NC}"
+        else
+            echo "✅ textbook 扩展已安装"
         fi
     fi
 }
@@ -163,10 +166,16 @@ _is_pdf_only() {
     [ "$fmt" = "textbook" ]
 }
 
-FORMAT=$(_detect_format "$INPUT_FILE")
+# ─── 格式确定：显式参数 > YAML frontmatter 自动检测 ───
+FORMAT=""
+if [ -n "$FORCE_FORMAT" ]; then
+    FORMAT="$FORCE_FORMAT"
+    echo "🎯 指定格式: ${FORMAT}-pdf"
+else
+    FORMAT=$(_detect_format "$INPUT_FILE")
+    echo "🎯 检测到格式: ${FORMAT}-pdf"
+fi
 PDF_ONLY=$(_is_pdf_only "$FORMAT" && echo true || echo false)
-
-echo "🎯 检测到格式: ${FORMAT}-pdf"
 if $PDF_ONLY; then
     echo "ℹ️  ${FORMAT} 格式仅支持 PDF 输出"
 fi

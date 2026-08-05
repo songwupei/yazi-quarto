@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.5.0
+--- quarto-render.yazi v0.5.1
 --- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704-formatted output
 --- 快捷键触发 → typst compile 或 quarto render → PDF + PNG/DOCX
 ---
@@ -52,10 +52,14 @@ local function extract_summary(stdout)
     return "Done!"
 end
 
-local function run_script(script, file_path)
-    local output, err_code = Command("bash")
+local function run_script(script, file_path, force_fmt)
+    local cmd = Command("bash")
         :arg(script)
         :arg(file_path)
+    if force_fmt and #force_fmt > 0 then
+        cmd = cmd:arg(force_fmt)
+    end
+    local output, err_code = cmd
         :stdout(Command.PIPED)
         :stderr(Command.PIPED)
         :output()
@@ -96,7 +100,15 @@ local get_hovered = ya.sync(function()
     return tostring(h.url)
 end)
 
-function M:entry(_)
+function M:entry(args)
+    -- Extract explicit format override from keymap args (e.g. "gbt9704" or "textbook")
+    local force_fmt = nil
+    if type(args) == "table" and #args > 0 then
+        force_fmt = args[1]
+    elseif type(args) == "string" and args ~= "" then
+        force_fmt = args
+    end
+
     local file_path = get_hovered()
 
     if not file_path then
@@ -142,7 +154,7 @@ function M:entry(_)
         level = "info",
     })
 
-    run_script(script, file_path)
+    run_script(script, file_path, force_fmt)
 end
 
 return M

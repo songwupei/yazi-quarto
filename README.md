@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.5.0-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.5.1-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -118,10 +118,21 @@ export FORGE_RENDER_SCRIPT=/path/to/quarto-render.sh
 
 ```toml
 [[mgr.prepend_keymap]]
-on = ["R"]
-run = "plugin quarto-render"
-desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"
+on = ["R", "g"]
+run = "plugin quarto-render gbt9704"
+desc = "GB/T 9704 公文格式"
+
+[[mgr.prepend_keymap]]
+on = ["R", "b"]
+run = "plugin quarto-render textbook"
+desc = "教科书排版格式"
 ```
+
+Press **`R`** to enter format selection, then:
+- **`g`** — render as GB/T 9704 government document
+- **`b`** — render as textbook layout
+
+Yazi will show available keys in the status bar after pressing `R`.
 
 ## Dependencies · 依赖
 
