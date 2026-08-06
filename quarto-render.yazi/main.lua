@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.6.3
+--- quarto-render.yazi v0.6.4
 --- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704-formatted output
 --- 快捷键触发 → typst compile 或 quarto render → PDF + PNG/DOCX
 ---

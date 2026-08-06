@@ -41,7 +41,11 @@ ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 # ─── paths ───
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_DIR="$HOME/.yazi-quarto"
+# extensions may be in deploy dir or cache (ya pkg skips dir copy)
 EXT_SRC="${SCRIPT_DIR}/../extensions/zhanshi"
+if [ ! -d "$EXT_SRC" ]; then
+    EXT_SRC=$(find "${HOME}/.cache/yazi/packages" -path "*/quarto-render.yazi/extensions/zhanshi" -type d 2>/dev/null | head -1)
+fi
 EXT_DST="$WORK_DIR/_extensions/songwupei/zhanshi"
 
 echo "📄 输入文件: $INPUT_FILENAME"
