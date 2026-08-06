@@ -41,7 +41,7 @@ ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 # ─── paths ───
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_DIR="$HOME/.yazi-quarto"
-EXT_SRC="${SCRIPT_DIR}/extensions/zhanshi"
+EXT_SRC="${SCRIPT_DIR}/../extensions/zhanshi"
 EXT_DST="$WORK_DIR/_extensions/songwupei/zhanshi"
 
 echo "📄 输入文件: $INPUT_FILENAME"
