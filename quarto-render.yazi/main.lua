@@ -1,17 +1,20 @@
---- quarto-render.yazi v0.6.4
---- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704-formatted output
---- 快捷键触发 → typst compile 或 quarto render → PDF + PNG/DOCX
+--- quarto-render.yazi v0.7.0
+--- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704 + slides
+--- 快捷键触发 → typst compile 或 quarto render → PDF + DOCX + PPTX + Beamer
 ---
 --- 依赖: typst (typst.app) 或 quarto (quarto.org)
 ---
 --- Keymap / 快捷键:
----   [[mgr.prepend_keymap]] on=["R"] run="plugin quarto-render"
+---   R     → 自动检测格式
+---   R + g → 强制 gbt9704（公文 PDF+DOCX+HTML+PNG）
+---   R + b → 强制 textbook（教科书 PDF）
+---   R + p → 幻灯片 PPTX + Beamer PDF（gbt9704 ≥ v0.7.0）
 
 local M = {}
 
--- Auto-detect plugin directory from this file's location
-local PLUGIN_DIR = (debug.getinfo(1, "S").source:match("^@(.+/)") or "")
-    :gsub("/+$", "")  -- strip trailing slashes
+-- Config dir base / 配置目录基础路径
+local CFG = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+local PLUGIN_DIR = CFG .. "/yazi/plugins/quarto-render.yazi"
 
 -- Script paths: env var first, fallback to bundled script / 脚本路径
 local QUARTO_SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")

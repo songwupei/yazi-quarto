@@ -1,8 +1,10 @@
 #!/bin/bash
 # ============================================================
-# quarto-slides-render.sh — Yazi quarto-render 幻灯片脚本
+# quarto-slides-render.sh — Yazi quarto-render 幻灯片脚本 (v0.7.0)
 #
-#   .md / .qmd → quarto render → pptx + beamer PDF
+#   .md / .qmd → quarto render → gbt9704-pptx + gbt9704-beamer
+#
+# 依赖 gbt9704 扩展 ≥ v0.7.0（pptx/beamer 已合并入 gbt9704）
 #
 # Usage: quarto-slides-render.sh <file_path> <pptx|beamer>
 #   pptx   → 同时渲染 PPTX + Beamer PDF
@@ -38,17 +40,11 @@ INPUT_BASENAME="${INPUT_FILENAME%.*}"
 BEAMER_NAME="${INPUT_BASENAME}-beamer"
 ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 
-# ─── paths ───
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-WORK_DIR="$HOME/.yazi-quarto"
-# extensions may be in deploy dir or cache (ya pkg skips dir copy)
-EXT_SRC="${SCRIPT_DIR}/../extensions/zhanshi"
-if [ ! -d "$EXT_SRC" ]; then
-    EXT_SRC=$(find "${HOME}/.cache/yazi/packages" -path "*/quarto-render.yazi/extensions/zhanshi" -type d 2>/dev/null | head -1)
-fi
-EXT_DST="$WORK_DIR/_extensions/songwupei/zhanshi"
-
 echo "📄 输入文件: $INPUT_FILENAME"
+
+# ─── paths ───
+WORK_DIR="$HOME/.yazi-quarto"
+EXT_NAME="songwupei/quarto-gbt9704"
 
 # Check quarto
 if ! command -v quarto &>/dev/null; then
@@ -56,22 +52,27 @@ if ! command -v quarto &>/dev/null; then
     exit 1
 fi
 
-# ─── ensure quarto-zhanshi extension ───
+# ─── ensure gbt9704 extension ≥ v0.7.0 ───
 _init_extension() {
     mkdir -p "$WORK_DIR"
-    if [ -f "$EXT_DST/_extension.yml" ]; then
-        return 0
+    cd "$WORK_DIR"
+
+    # Check common install locations
+    for d in "_extensions/songwupei/gbt9704" "_extensions/gbt9704"; do
+        if [ -f "$d/_extension.yml" ]; then
+            echo "✅ gbt9704 扩展已就绪"
+            return 0
+        fi
+    done
+
+    # Install via quarto add
+    echo "📦 安装 $EXT_NAME ..."
+    if ! quarto add "$EXT_NAME" --no-prompt 2>&1; then
+        echo -e "${RED}❌ 扩展安装失败: $EXT_NAME${NC}" >&2
+        echo "   请检查网络连接，或手动运行:" >&2
+        echo "   cd $WORK_DIR && quarto add $EXT_NAME" >&2
+        exit 1
     fi
-    if [ ! -d "$EXT_SRC" ]; then
-        echo -e "${YELLOW}⚠ 扩展源缺失: $EXT_SRC${NC}"
-        echo "  尝试 quartz add ..."
-        cd "$WORK_DIR"
-        quarto add songwupei/quarto-zhanshi --no-prompt 2>&1 || true
-        return
-    fi
-    echo "🔧 安装 quarto-zhanshi → ~/.yazi-quarto/_extensions/ ..."
-    mkdir -p "$(dirname "$EXT_DST")"
-    cp -r "$EXT_SRC" "$EXT_DST"
     echo "✅ 扩展已安装"
 }
 _init_extension
@@ -87,12 +88,12 @@ _detect_format_prefix() {
     local file="$1"
     local base_fmt="$2"
     if [ -f "$file" ]; then
-        if sed -n '/^---$/,/^---$/p' "$file" | grep -qE "zhanshi-${base_fmt}"; then
-            echo "zhanshi-${base_fmt}"
+        if sed -n '/^---$/,/^---$/p' "$file" | grep -qE "gbt9704-${base_fmt}"; then
+            echo "gbt9704-${base_fmt}"
             return
         fi
     fi
-    echo "$base_fmt"
+    echo "gbt9704-${base_fmt}"
 }
 
 # ─── render one format ───

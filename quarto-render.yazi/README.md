@@ -1,6 +1,6 @@
 # quarto-render.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.4.3-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue)](https://codeberg.org/songwupei/yazi-quarto)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.typ` / `.md` / `.qmd` files into **GB/T 9704** format with a single keypress.
@@ -75,14 +75,16 @@ typst compile
   │
   ▼
 ~/.yazi-quarto/
-├─ quarto-gbt9704 extension (auto-installed · 自动安装)
+├─ quarto-gbt9704 extension (auto-installed · 自动安装，≥ v0.7.0)
 └─ quarto render
     ├─ --to gbt9704-pdf  (xelatex)
     ├─ --to gbt9704-docx
-    └─ --to gbt9704-html → Chrome headless → PNG
+    ├─ --to gbt9704-html → Chrome headless → PNG
+    ├─ --to gbt9704-pptx (蓝色商务)
+    └─ --to gbt9704-beamer (青山绿水)
         │
         ▼
- output: .pdf + .docx + .html + .png + .gbt9704.md → source dir
+ output: .pdf + .docx + .html + .png + .pptx → source dir
 ```
 
 ## Config · 配置
@@ -118,7 +120,7 @@ export FORGE_RENDER_SCRIPT=/path/to/quarto-render.sh
 | [typst](https://typst.app/) | Typst compiler (for `.typ` files) |
 | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) | GB/T 9704 Typst package ≥ v0.2.0 |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine (for `.md`/`.qmd` files) |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 format extension ≥ v0.5.1 (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + slides format extension ≥ v0.7.0 (auto-installed) |
 
 ## License · 许可证
 

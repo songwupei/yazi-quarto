@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.6.4-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -14,7 +14,7 @@ Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — auto-detects format from
 |---|---|
 | 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
 | 🔤 **Typst + Quarto 双引擎** | `.typ` → typst compile，`.md/.qmd` → quarto render，自动识别分流 |
-| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) + [quarto-zhanshi](https://github.com/songwupei/quarto-zhanshi) 格式扩展，支持公文、教科书和幻灯片 |
+| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展，支持公文、教科书和幻灯片 |
 | 🎯 **自动识别格式** | 读取 YAML `format:` 字段，自动选择对应格式 |
 | ⚡ **一键多文件** | 按 `R` 根据文件类型自动选择引擎输出 |
 | 🧹 **干净无残留** | Typst 零中间文件；Quarto 渲染后仅保留 `_extensions/`，其余自动清除 |
@@ -59,16 +59,12 @@ No temp files, no cleanup needed. Output goes to source directory.
     │
     ▼
  ~/.yazi-quarto/
- ├─ _extensions/songwupei/zhanshi (auto-installed)
+ ├─ _extensions/songwupei/gbt9704 (auto-installed, ≥ v0.7.0)
  ├─ copy input → render
  │
  └─ quarto render
-     ├─ zhanshi-pptx  → slide-level 2 + reference.pptx
-     └─ zhanshi-beamer → 青山绿水 (XeLaTeX, STKaiti, TikZ)
-         │
-         ▼
-  output → source dir
-```
+     ├─ gbt9704-pptx  → slide-level 2 + reference.pptx (蓝色商务)
+     └─ gbt9704-beamer → 青山绿水 (XeLaTeX, STKaiti, TikZ)
          │
          ▼
   output → source dir
@@ -154,8 +150,7 @@ desc = "幻灯片 → PPTX + Beamer PDF"
 Press **`R`** to enter format selection, then:
 - **`g`** — render as GB/T 9704 government document (PDF + DOCX + HTML + PNG)
 - **`b`** — render as textbook layout (PDF only)
-- **`p`** — render slides → PPTX + Beamer PDF（一次出两种格式）
-  - Beamer PDF 带 `-beamer` 后缀以区别于 gbt9704 的 PDF
+- **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.0）
 
 Yazi will show available keys in the status bar after pressing `R`.
 
@@ -167,7 +162,7 @@ Yazi will show available keys in the status bar after pressing `R`.
 | [typst](https://typst.app/) | Typst compiler (for `.typ` files) |
 | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) | GB/T 9704 Typst package ≥ v0.2.0 |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine (for `.md`/`.qmd` files) |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + textbook format extension ≥ v0.6.11 (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + textbook + slides format extension ≥ v0.7.0 (auto-installed) |
 
 ## License · 许可证
 
