@@ -1,12 +1,12 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.5.2-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — auto-detects format from YAML frontmatter, renders to PDF + more. Zero config. Supports GB/T 9704 government docs and textbook layouts.
+Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — auto-detects format from YAML frontmatter, renders to PDF + more. Zero config. Supports GB/T 9704 government docs, textbook layouts, and slides (PPTX + Beamer).
 
-在 Yazi 中选中 `.typ` / `.md` / `.qmd`，按 `R` — 自动检测 YAML 格式、一键生成 PDF。零配置。支持 GB/T 9704 公文和教科书排版。
+在 Yazi 中选中 `.typ` / `.md` / `.qmd`，按 `R` — 自动检测 YAML 格式、一键生成 PDF。零配置。支持 GB/T 9704 公文、教科书排版和幻灯片（PPTX + Beamer）。
 
 ## Highlights · 亮点
 
@@ -14,8 +14,8 @@ Hover on `.typ` / `.md` / `.qmd` in Yazi, press `R` — auto-detects format from
 |---|---|
 | 🔌 **零配置** | 首次运行自动创建 `~/.yazi-quarto/`、自动安装格式扩展 |
 | 🔤 **Typst + Quarto 双引擎** | `.typ` → typst compile，`.md/.qmd` → quarto render，自动识别分流 |
-| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) 格式扩展，支持公文 (gbt9704) 和教科书 (textbook) 两种版式 |
-| 🎯 **自动识别格式** | 读取 YAML `format:` 字段，自动选择 gbt9704-pdf 或 textbook-pdf |
+| 🧩 **全套自研** | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) + [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) + [quarto-zhanshi](https://github.com/songwupei/quarto-zhanshi) 格式扩展，支持公文、教科书和幻灯片 |
+| 🎯 **自动识别格式** | 读取 YAML `format:` 字段，自动选择对应格式 |
 | ⚡ **一键多文件** | 按 `R` 根据文件类型自动选择引擎输出 |
 | 🧹 **干净无残留** | Typst 零中间文件；Quarto 渲染后仅保留 `_extensions/`，其余自动清除 |
 | 📋 **filter 中间件** | `.gbt9704.md` 保存 filter 处理后的中间 markdown，可复现可 diff |
@@ -51,6 +51,24 @@ No temp files, no cleanup needed. Output goes to source directory.
      ├─ auto-detect format from YAML `format:` field
      ├─ gbt9704:  PDF + DOCX + HTML → Chrome headless → PNG
      └─ textbook: PDF only
+
+### Slides (PPTX / Beamer)
+
+```
+.md / .qmd file
+    │
+    ▼
+ ~/.yazi-quarto/
+ ├─ _extensions/songwupei/zhanshi (auto-installed)
+ ├─ copy input → render
+ │
+ └─ quarto render
+     ├─ zhanshi-pptx  → slide-level 2 + reference.pptx
+     └─ zhanshi-beamer → 青山绿水 (XeLaTeX, STKaiti, TikZ)
+         │
+         ▼
+  output → source dir
+```
          │
          ▼
   output → source dir
