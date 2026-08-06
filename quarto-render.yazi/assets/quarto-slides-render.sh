@@ -2,9 +2,11 @@
 # ============================================================
 # quarto-slides-render.sh — Yazi quarto-render 幻灯片脚本
 #
-#   .md / .qmd → quarto render → pptx / beamer PDF
+#   .md / .qmd → quarto render → pptx + beamer PDF
 #
 # Usage: quarto-slides-render.sh <file_path> <pptx|beamer>
+#   pptx   → 同时渲染 PPTX + Beamer PDF
+#   beamer → 仅渲染 Beamer PDF
 # ============================================================
 set -euo pipefail
 
@@ -33,6 +35,7 @@ esac
 
 INPUT_FILENAME=$(basename "$INPUT_FILE")
 INPUT_BASENAME="${INPUT_FILENAME%.*}"
+BEAMER_NAME="${INPUT_BASENAME}-beamer"
 ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 
 # ─── paths ───
@@ -43,7 +46,6 @@ EXT_SRC="${PLUGIN_DIR}/assets/extensions/zhanshi"
 EXT_DST="$WORK_DIR/_extensions/songwupei/zhanshi"
 
 echo "📄 输入文件: $INPUT_FILENAME"
-echo "🎯 目标格式: $FORMAT"
 
 # Check quarto
 if ! command -v quarto &>/dev/null; then
@@ -55,7 +57,7 @@ fi
 _init_extension() {
     mkdir -p "$WORK_DIR"
     if [ -f "$EXT_DST/_extension.yml" ]; then
-        return 0  # already installed
+        return 0
     fi
     if [ ! -d "$EXT_SRC" ]; then
         echo -e "${YELLOW}⚠ 扩展源缺失: $EXT_SRC${NC}"
@@ -73,7 +75,6 @@ _init_extension
 
 # ─── copy input + resources to workdir ───
 cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
-# Copy images/ if present
 [ -d "$ORIG_DIR/images" ] && cp -r "$ORIG_DIR/images" "$WORK_DIR/images" 2>/dev/null || true
 
 cd "$WORK_DIR"
@@ -90,40 +91,44 @@ _detect_format_prefix() {
     fi
     echo "$base_fmt"
 }
-TO_FORMAT=$(_detect_format_prefix "$INPUT_FILENAME" "$FORMAT")
-echo "🔧 渲染格式: $TO_FORMAT"
+
+# ─── render one format ───
+_render() {
+    local fmt="$1"
+    local to_fmt=$(_detect_format_prefix "$INPUT_FILENAME" "$fmt")
+    echo "🖨️  quarto render --to $to_fmt ..."
+    if ! quarto render "$INPUT_FILENAME" --to "$to_fmt" 2>&1; then
+        echo -e "${RED}❌ $fmt 渲染失败${NC}" >&2
+        return 1
+    fi
+}
 
 # ─── render ───
-echo "🖨️  quarto render --to $TO_FORMAT ..."
-if ! quarto render "$INPUT_FILENAME" --to "$TO_FORMAT" 2>&1; then
-    echo -e "${RED}❌ 渲染失败${NC}" >&2
-    # cleanup
-    rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
-    exit 1
+if [ "$FORMAT" = "pptx" ]; then
+    echo "🎯 PPTX + Beamer PDF"
+    _render pptx
+    _render beamer
+    # Rename beamer PDF to add -beamer suffix
+    [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
+else
+    echo "🎯 Beamer PDF"
+    _render beamer
+    [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
 fi
 
 # ─── copy output back ───
-case "$FORMAT" in
-    pptx)
-        OUT="$WORK_DIR/${INPUT_BASENAME}.pptx"
-        if [ -f "$OUT" ]; then
-            cp "$OUT" "$ORIG_DIR/"
-            echo "📤 PPTX → $ORIG_DIR/${INPUT_BASENAME}.pptx"
-        fi
-        ;;
-    beamer)
-        OUT="$WORK_DIR/${INPUT_BASENAME}.pdf"
-        if [ -f "$OUT" ]; then
-            cp "$OUT" "$ORIG_DIR/"
-            echo "📤 PDF → $ORIG_DIR/${INPUT_BASENAME}.pdf"
-        fi
-        ;;
-esac
+if [ "$FORMAT" = "pptx" ]; then
+    OUT="$WORK_DIR/${INPUT_BASENAME}.pptx"
+    [ -f "$OUT" ] && cp "$OUT" "$ORIG_DIR/" && echo "📤 PPTX → $ORIG_DIR/${INPUT_BASENAME}.pptx"
+fi
+OUT="$WORK_DIR/${BEAMER_NAME}.pdf"
+[ -f "$OUT" ] && cp "$OUT" "$ORIG_DIR/" && echo "📤 PDF → $ORIG_DIR/${BEAMER_NAME}.pdf"
 
 # ─── cleanup ───
 rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.pptx" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.pdf" 2>/dev/null || true
+rm -f "$WORK_DIR/${BEAMER_NAME}.pdf" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
 rm -rf "$WORK_DIR/images" 2>/dev/null || true
 

@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.6.1-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -141,26 +141,21 @@ run = "plugin quarto-render gbt9704"
 desc = "GB/T 9704 公文格式"
 
 [[mgr.prepend_keymap]]
-on = ["R", "t"]
+on = ["R", "b"]
 run = "plugin quarto-render textbook"
 desc = "教科书排版格式"
 
 [[mgr.prepend_keymap]]
 on = ["R", "p"]
 run = "plugin quarto-render pptx"
-desc = "幻灯片 → PPTX"
-
-[[mgr.prepend_keymap]]
-on = ["R", "b"]
-run = "plugin quarto-render beamer"
-desc = "幻灯片 → Beamer PDF"
+desc = "幻灯片 → PPTX + Beamer PDF"
 ```
 
 Press **`R`** to enter format selection, then:
-- **`g`** — render as GB/T 9704 government document
-- **`t`** — render as textbook layout
-- **`p`** — render slides → PPTX (with `zhanshi-pptx` extension if available)
-- **`b`** — render slides → Beamer PDF (with `zhanshi-beamer` extension if available)
+- **`g`** — render as GB/T 9704 government document (PDF + DOCX + HTML + PNG)
+- **`b`** — render as textbook layout (PDF only)
+- **`p`** — render slides → PPTX + Beamer PDF（一次出两种格式）
+  - Beamer PDF 带 `-beamer` 后缀以区别于 gbt9704 的 PDF
 
 Yazi will show available keys in the status bar after pressing `R`.
 
