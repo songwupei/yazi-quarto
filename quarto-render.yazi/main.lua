@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.6.1
+--- quarto-render.yazi v0.6.2
 --- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704-formatted output
 --- 快捷键触发 → typst compile 或 quarto render → PDF + PNG/DOCX
 ---
@@ -9,9 +9,9 @@
 
 local M = {}
 
--- Config dir base / 配置目录基础路径
-local CFG = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
-local PLUGIN_DIR = CFG .. "/yazi/plugins/quarto-render.yazi"
+-- Auto-detect plugin directory from this file's location
+local PLUGIN_DIR = (debug.getinfo(1, "S").source:match("^@(.+/)") or "")
+    :gsub("/+$", "")  -- strip trailing slashes
 
 -- Script paths: env var first, fallback to bundled script / 脚本路径
 local QUARTO_SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")

@@ -39,10 +39,9 @@ BEAMER_NAME="${INPUT_BASENAME}-beamer"
 ORIG_DIR=$(realpath "$(dirname "$INPUT_FILE")")
 
 # ─── paths ───
-CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
-PLUGIN_DIR="${CFG}/yazi/plugins/quarto-render.yazi"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_DIR="$HOME/.yazi-quarto"
-EXT_SRC="${PLUGIN_DIR}/assets/extensions/zhanshi"
+EXT_SRC="${SCRIPT_DIR}/extensions/zhanshi"
 EXT_DST="$WORK_DIR/_extensions/songwupei/zhanshi"
 
 echo "📄 输入文件: $INPUT_FILENAME"
