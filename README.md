@@ -123,14 +123,26 @@ run = "plugin quarto-render gbt9704"
 desc = "GB/T 9704 公文格式"
 
 [[mgr.prepend_keymap]]
-on = ["R", "b"]
+on = ["R", "t"]
 run = "plugin quarto-render textbook"
 desc = "教科书排版格式"
+
+[[mgr.prepend_keymap]]
+on = ["R", "p"]
+run = "plugin quarto-render pptx"
+desc = "幻灯片 → PPTX"
+
+[[mgr.prepend_keymap]]
+on = ["R", "b"]
+run = "plugin quarto-render beamer"
+desc = "幻灯片 → Beamer PDF"
 ```
 
 Press **`R`** to enter format selection, then:
 - **`g`** — render as GB/T 9704 government document
-- **`b`** — render as textbook layout
+- **`t`** — render as textbook layout
+- **`p`** — render slides → PPTX (with `zhanshi-pptx` extension if available)
+- **`b`** — render slides → Beamer PDF (with `zhanshi-beamer` extension if available)
 
 Yazi will show available keys in the status bar after pressing `R`.
 

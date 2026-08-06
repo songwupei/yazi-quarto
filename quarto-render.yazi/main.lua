@@ -20,6 +20,9 @@ local QUARTO_SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
 local TYPST_SCRIPT = os.getenv("TYPST_RENDER_SCRIPT")
     or (PLUGIN_DIR .. "/assets/typst-render.sh")
 
+local SLIDES_SCRIPT = os.getenv("SLIDES_RENDER_SCRIPT")
+    or (PLUGIN_DIR .. "/assets/quarto-slides-render.sh")
+
 local function extract_error(stderr)
     -- Extract meaningful error lines (skip ANSI/empty, keep last lines)
     local lines = {}
@@ -129,7 +132,21 @@ function M:entry(args)
     local script = nil
     local engine = nil
 
-    if is_typ then
+    -- Route slides formats (pptx/beamer) to slides script
+    if force_fmt == "pptx" or force_fmt == "beamer" then
+        if is_md or is_qmd then
+            script = SLIDES_SCRIPT
+            engine = "Slides"
+        else
+            ya.notify({
+                title = "Slides Render",
+                content = "仅支持 .md / .qmd:\n" .. file_path,
+                timeout = 4.0,
+                level = "warn",
+            })
+            return
+        end
+    elseif is_typ then
         script = TYPST_SCRIPT
         engine = "Typst"
     elseif is_md or is_qmd then
