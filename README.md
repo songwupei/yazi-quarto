@@ -79,6 +79,8 @@ Format auto-detection: reads `format:` in YAML frontmatter.
 - `format: textbook-pdf` → `--to textbook-pdf`
 - default → `--to gbt9704-pdf`
 
+> **PPTX 布局机制**：Quarto/Pandoc 不支持 `::: {.layout-name}` 手动指定 slide layout。Pandoc 按内容结构自动匹配：文字+表格 → Content with Caption，纯文字 → Title and Content，两栏 → Two Content。定制布局的唯一途径是修改 `reference-gbt9704.pptx` 中对应 layout 的占位符。
+
 ## Install · 安装
 
 ### ya pkg (recommended · 推荐)
