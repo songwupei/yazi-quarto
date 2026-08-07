@@ -319,6 +319,15 @@ if [ -f "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" ]; then
     COPY_FMT="${COPY_FMT}MD "
 fi
 
+# ─── 保存清理版源文件 (方案 C: 清理版 .gbt9704.qmd) ───
+# 复制源文件到目标目录，命名为 .gbt9704.qmd（不含 filter 处理，仅格式清理）
+GB9704_QMD="${INPUT_BASENAME}.gbt9704.qmd"
+if [ -f "$ORIG_DIR/$INPUT_FILENAME" ]; then
+    cp "$ORIG_DIR/$INPUT_FILENAME" "$ORIG_DIR/$GB9704_QMD"
+    COPIED="${COPIED}qmd "
+    COPY_FMT="${COPY_FMT}QMD "
+fi
+
 if [ -z "$COPIED" ]; then
     echo -e "${YELLOW}⚠️  警告: 没有找到输出文件${NC}"
     _cleanup

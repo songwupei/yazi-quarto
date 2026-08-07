@@ -83,6 +83,26 @@ cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
 
 cd "$WORK_DIR"
 
+# ─── generate filter intermediate (.gbt9704.md) ───
+FILTER_DIR="$WORK_DIR/_extensions/songwupei/gbt9704/assets/filters"
+echo ""
+echo "📋 生成 .gbt9704.md（filter 处理后的中间 markdown）..."
+if pandoc "$INPUT_FILENAME" \
+    --lua-filter="$FILTER_DIR/gbt9704-metadata.lua" \
+    --lua-filter="$FILTER_DIR/numbering-to-headings.lua" \
+    --lua-filter="$FILTER_DIR/heading-demotion.lua" \
+    --lua-filter="$FILTER_DIR/title-promotion.lua" \
+    --lua-filter="$FILTER_DIR/format-zhidu.lua" \
+    --lua-filter="$FILTER_DIR/table-colwidths.lua" \
+    --lua-filter="$FILTER_DIR/format-legal.lua" \
+    --lua-filter="$FILTER_DIR/fcolumn.lua" \
+    --lua-filter="$FILTER_DIR/gbt9704-emoji.lua" \
+    -t gfm -o "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>&1; then
+    echo "   ✓ .gbt9704.md 完成"
+else
+    echo -e "  ${YELLOW}⚠  .gbt9704.md 生成失败（不影响后续渲染）${NC}"
+fi
+
 # ─── detect format prefix ───
 _detect_format_prefix() {
     local file="$1"
@@ -134,6 +154,11 @@ if [ "$FORMAT" = "pptx" ]; then
             echo "📤 PDF  → $ORIG_DIR/${BEAMER_NAME}.pdf"
             BEAMER_OK=true
         fi
+        # 保留 beamer 中间 .tex 文件
+        if [ -f "$WORK_DIR/${INPUT_BASENAME}.tex" ]; then
+            cp "$WORK_DIR/${INPUT_BASENAME}.tex" "$ORIG_DIR/${BEAMER_NAME}.tex"
+            echo "📤 TEX  → $ORIG_DIR/${BEAMER_NAME}.tex"
+        fi
     fi
 else
     echo "🎯 Beamer PDF"
@@ -147,7 +172,23 @@ else
             echo "📤 PDF  → $ORIG_DIR/${BEAMER_NAME}.pdf"
             BEAMER_OK=true
         fi
+        # 保留 beamer 中间 .tex 文件
+        if [ -f "$WORK_DIR/${INPUT_BASENAME}.tex" ]; then
+            cp "$WORK_DIR/${INPUT_BASENAME}.tex" "$ORIG_DIR/${BEAMER_NAME}.tex"
+            echo "📤 TEX  → $ORIG_DIR/${BEAMER_NAME}.tex"
+        fi
     fi
+fi
+
+# ─── copy filter intermediate + cleaned source ───
+if [ -f "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" ]; then
+    cp "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" "$ORIG_DIR/"
+    echo "📤 MD   → $ORIG_DIR/${INPUT_BASENAME}.gbt9704.md"
+fi
+GB9704_QMD="${INPUT_BASENAME}.gbt9704.qmd"
+if [ -f "$ORIG_DIR/$INPUT_FILENAME" ]; then
+    cp "$ORIG_DIR/$INPUT_FILENAME" "$ORIG_DIR/$GB9704_QMD"
+    echo "📤 QMD  → $ORIG_DIR/$GB9704_QMD"
 fi
 
 # ─── summary ───
@@ -168,4 +209,6 @@ rm -f "$WORK_DIR/${INPUT_BASENAME}.pptx" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.pdf" 2>/dev/null || true
 rm -f "$WORK_DIR/${BEAMER_NAME}.pdf" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
+rm -f "$WORK_DIR/${INPUT_BASENAME}.gbt9704.md" 2>/dev/null || true
+rm -f "$WORK_DIR/${INPUT_BASENAME}.qmd" 2>/dev/null || true
 rm -rf "$WORK_DIR/images" 2>/dev/null || true

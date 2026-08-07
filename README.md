@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.7.1-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.2-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -60,14 +60,19 @@ No temp files, no cleanup needed. Output goes to source directory.
     ▼
  ~/.yazi-quarto/
  ├─ _extensions/songwupei/gbt9704 (auto-installed, ≥ v0.7.0)
- ├─ copy input → render each format independently
+ ├─ copy input → pandoc filter chain → .gbt9704.md
  │
- └─ quarto render
-     ├─ gbt9704-pptx  → .pptx (蓝色商务, copied immediately)
-     └─ gbt9704-beamer → -beamer.pdf (青山绿水, XeLaTeX, STKaiti, TikZ)
-         │
-         ▼
-  output → source dir (each format copied independently; one failure won't block the other)
+ ├─ quarto render (each format independently)
+ │   ├─ gbt9704-pptx  → .pptx (gbt9704 蓝色公文模板)
+ │   └─ gbt9704-beamer → -beamer.pdf (青山绿水, XeLaTeX, STKaiti, TikZ)
+ │                      → -beamer.tex (LaTeX 中间文件)
+ │
+ └─ output → source dir
+     ├─ .pptx
+     ├─ -beamer.pdf
+     ├─ -beamer.tex
+     ├─ .gbt9704.md   (filter 中间 markdown)
+     └─ .gbt9704.qmd  (清理版源文件)
 ```
 
 Format auto-detection: reads `format:` in YAML frontmatter.
