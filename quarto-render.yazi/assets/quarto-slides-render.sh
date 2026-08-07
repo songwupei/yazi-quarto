@@ -107,26 +107,60 @@ _render() {
     fi
 }
 
-# ─── render ───
+# ─── render + copy (each format independently; one failure won't block the other) ───
+PPTX_OK=false
+BEAMER_OK=false
+
 if [ "$FORMAT" = "pptx" ]; then
     echo "🎯 PPTX + Beamer PDF"
-    _render pptx
-    _render beamer
-    # Rename beamer PDF to add -beamer suffix
-    [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
+    echo ""
+
+    # --- PPTX ---
+    if _render pptx; then
+        OUT="$WORK_DIR/${INPUT_BASENAME}.pptx"
+        if [ -f "$OUT" ]; then
+            cp "$OUT" "$ORIG_DIR/"
+            echo "📤 PPTX → $ORIG_DIR/${INPUT_BASENAME}.pptx"
+            PPTX_OK=true
+        fi
+    fi
+
+    # --- Beamer ---
+    if _render beamer; then
+        [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
+        OUT="$WORK_DIR/${BEAMER_NAME}.pdf"
+        if [ -f "$OUT" ]; then
+            cp "$OUT" "$ORIG_DIR/"
+            echo "📤 PDF  → $ORIG_DIR/${BEAMER_NAME}.pdf"
+            BEAMER_OK=true
+        fi
+    fi
 else
     echo "🎯 Beamer PDF"
-    _render beamer
-    [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
+    echo ""
+
+    if _render beamer; then
+        [ -f "$WORK_DIR/${INPUT_BASENAME}.pdf" ] && mv "$WORK_DIR/${INPUT_BASENAME}.pdf" "$WORK_DIR/${BEAMER_NAME}.pdf"
+        OUT="$WORK_DIR/${BEAMER_NAME}.pdf"
+        if [ -f "$OUT" ]; then
+            cp "$OUT" "$ORIG_DIR/"
+            echo "📤 PDF  → $ORIG_DIR/${BEAMER_NAME}.pdf"
+            BEAMER_OK=true
+        fi
+    fi
 fi
 
-# ─── copy output back ───
-if [ "$FORMAT" = "pptx" ]; then
-    OUT="$WORK_DIR/${INPUT_BASENAME}.pptx"
-    [ -f "$OUT" ] && cp "$OUT" "$ORIG_DIR/" && echo "📤 PPTX → $ORIG_DIR/${INPUT_BASENAME}.pptx"
+# ─── summary ───
+echo ""
+if $PPTX_OK && $BEAMER_OK; then
+    echo "✅ PPTX + Beamer 全部完成!"
+elif $PPTX_OK; then
+    echo -e "⚠️  PPTX 完成，Beamer 失败（${YELLOW}请检查 xelatex 是否安装、beamer  preamble 是否存在${NC}）"
+elif $BEAMER_OK; then
+    echo -e "⚠️  Beamer 完成，PPTX 失败"
+else
+    echo -e "${RED}❌ 全部渲染失败${NC}" >&2
 fi
-OUT="$WORK_DIR/${BEAMER_NAME}.pdf"
-[ -f "$OUT" ] && cp "$OUT" "$ORIG_DIR/" && echo "📤 PDF → $ORIG_DIR/${BEAMER_NAME}.pdf"
 
 # ─── cleanup ───
 rm -f "$WORK_DIR/$INPUT_FILENAME" 2>/dev/null || true
@@ -135,5 +169,3 @@ rm -f "$WORK_DIR/${INPUT_BASENAME}.pdf" 2>/dev/null || true
 rm -f "$WORK_DIR/${BEAMER_NAME}.pdf" 2>/dev/null || true
 rm -f "$WORK_DIR/${INPUT_BASENAME}.tex" 2>/dev/null || true
 rm -rf "$WORK_DIR/images" 2>/dev/null || true
-
-echo "✅ 完成!"

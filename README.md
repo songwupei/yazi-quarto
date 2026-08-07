@@ -1,6 +1,6 @@
 # yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.1-blue)](https://github.com/songwupei/yazi-quarto)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -60,14 +60,14 @@ No temp files, no cleanup needed. Output goes to source directory.
     ▼
  ~/.yazi-quarto/
  ├─ _extensions/songwupei/gbt9704 (auto-installed, ≥ v0.7.0)
- ├─ copy input → render
+ ├─ copy input → render each format independently
  │
  └─ quarto render
-     ├─ gbt9704-pptx  → slide-level 2 + reference.pptx (蓝色商务)
-     └─ gbt9704-beamer → 青山绿水 (XeLaTeX, STKaiti, TikZ)
+     ├─ gbt9704-pptx  → .pptx (蓝色商务, copied immediately)
+     └─ gbt9704-beamer → -beamer.pdf (青山绿水, XeLaTeX, STKaiti, TikZ)
          │
          ▼
-  output → source dir
+  output → source dir (each format copied independently; one failure won't block the other)
 ```
 
 Format auto-detection: reads `format:` in YAML frontmatter.
@@ -153,6 +153,13 @@ Press **`R`** to enter format selection, then:
 - **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.0）
 
 Yazi will show available keys in the status bar after pressing `R`.
+
+## Compatibility · 兼容性
+
+| Yazi | Plugin args format | Status |
+|---|---|---|
+| ≥ 26.x | `{args = {"pptx"}, id = N}` | ✅ supported |
+| 25.x | `"pptx"` or `{"pptx"}` | ✅ supported |
 
 ## Dependencies · 依赖
 

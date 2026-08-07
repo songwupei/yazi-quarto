@@ -108,9 +108,17 @@ end)
 
 function M:entry(args)
     -- Extract explicit format override from keymap args (e.g. "gbt9704" or "textbook")
+    -- Yazi 26.x: args = {args = {"pptx"}, id = N}
+    -- Yazi 25.x: args = {"pptx"} or args = "pptx"
     local force_fmt = nil
-    if type(args) == "table" and #args > 0 then
-        force_fmt = args[1]
+    if type(args) == "table" then
+        if args.args and type(args.args) == "table" and args.args[1] then
+            force_fmt = args.args[1]                -- Yazi 26.x
+        elseif args[1] and type(args[1]) == "string" then
+            force_fmt = args[1]                     -- Yazi 25.x array
+        else
+            force_fmt = select(2, next(args))       -- key-value table
+        end
     elseif type(args) == "string" and args ~= "" then
         force_fmt = args
     end
