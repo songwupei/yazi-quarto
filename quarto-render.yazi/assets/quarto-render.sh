@@ -170,6 +170,59 @@ fi
 
 cd "$WORK_DIR"
 
+# ─── normalize blank lines: table rows compact, everything else spaced ───
+_normalize_blank_lines() {
+    local file="$1"
+    python3 -c "
+import sys
+with open('$file', 'r') as f:
+    lines = f.readlines()
+
+result = []
+in_yaml = False
+yaml_done = False
+
+def is_table(s):
+    return s.startswith('|') and s.endswith('|')
+
+for i, line in enumerate(lines):
+    stripped = line.rstrip('\n')
+    prev_s = lines[i-1].rstrip('\n') if i > 0 else ''
+    next_s = lines[i+1].rstrip('\n') if i+1 < len(lines) else ''
+
+    if stripped == '---' and not yaml_done:
+        in_yaml = not in_yaml
+        if not in_yaml: yaml_done = True
+        result.append(line)
+        continue
+    if in_yaml:
+        result.append(line)
+        continue
+
+    # remove blank lines between table rows
+    if not stripped:
+        if (is_table(prev_s) and is_table(next_s)) or \
+           (is_table(prev_s) and next_s == '|---|---|---|') or \
+           (prev_s == '|---|---|---|' and is_table(next_s)):
+            continue
+
+    result.append(line)
+
+    # add blank between non-table consecutive non-blank lines
+    if stripped and next_s:
+        if is_table(stripped) and is_table(next_s): continue
+        if stripped == '|---|---|---|' or next_s == '|---|---|---|': continue
+        if lines[i+1].strip():
+            result.append('\n')
+
+with open('$file', 'w') as f:
+    f.writelines(result)
+"
+}
+
+_normalize_blank_lines "$INPUT_FILENAME"
+echo "📋 空行已规整"
+
 # ─── 格式检测：从 YAML frontmatter 读取 format 字段 ───
 _detect_format() {
     local file="$1"
